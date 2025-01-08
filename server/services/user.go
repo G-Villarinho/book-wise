@@ -2,16 +2,16 @@ package services
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/G-Villarinho/book-wise-api/cache"
 	"github.com/G-Villarinho/book-wise-api/internal"
 	"github.com/G-Villarinho/book-wise-api/models"
 	"github.com/G-Villarinho/book-wise-api/repositories"
-	"github.com/google/uuid"
 )
 
 type UserService interface {
-	CreateUser(ctx context.Context, payload models.CreateUserPayload) (uuid.UUID, error)
+	CreateUser(ctx context.Context, payload models.CreateUserPayload) error
 }
 
 type userService struct {
@@ -38,6 +38,20 @@ func NewUserService(di *internal.Di) (UserService, error) {
 	}, nil
 }
 
-func (u *userService) CreateUser(ctx context.Context, payload models.CreateUserPayload) (uuid.UUID, error) {
-	return uuid.Nil, nil
+func (u *userService) CreateUser(ctx context.Context, payload models.CreateUserPayload) error {
+	user, err := u.userRepository.GetUserByEmail(ctx, payload.Email)
+	if err != nil {
+		return fmt.Errorf("get user by email: %w", err)
+	}
+
+	if user != nil {
+		return models.ErrEmailAlreadyExists
+	}
+
+	user = payload.ToUser()
+	if err := u.userRepository.CreateUser(ctx, *user); err != nil {
+		return fmt.Errorf("create user: %w", err)
+	}
+
+	return nil
 }

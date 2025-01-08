@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func TrimStrings(payload interface{}) error {
+func TrimStrings(payload any) error {
 	v := reflect.ValueOf(payload)
 	t := reflect.TypeOf(payload)
 

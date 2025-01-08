@@ -2,12 +2,17 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
+	"github.com/G-Villarinho/book-wise-api/cache"
+	"github.com/G-Villarinho/book-wise-api/cmd/api/handler"
 	"github.com/G-Villarinho/book-wise-api/config"
 	"github.com/G-Villarinho/book-wise-api/database"
 	"github.com/G-Villarinho/book-wise-api/internal"
+	"github.com/G-Villarinho/book-wise-api/repositories"
+	"github.com/G-Villarinho/book-wise-api/services"
 	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -51,4 +56,15 @@ func main() {
 	internal.Provide(di, func(d *internal.Di) (*redis.Client, error) {
 		return redisClient, nil
 	})
+
+	internal.Provide(di, handler.NewUserHandler)
+
+	internal.Provide(di, cache.NewRedisCache)
+
+	internal.Provide(di, services.NewUserService)
+
+	internal.Provide(di, repositories.NewUserRepository)
+
+	handler.SetupRoutes(e, di)
+	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", config.Env.APIPort)))
 }
