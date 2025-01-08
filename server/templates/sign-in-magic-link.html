@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Magic Link</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    .email-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      background-color: #181C2A;
+      padding: 20px 0;
+      color: #ffffff;
+      font-size: 24px;
+    }
+
+    .content {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .content h2 {
+      font-size: 20px;
+      color: #181C2A;
+    }
+
+    .content p {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #666666;
+    }
+
+    .button-container {
+      margin: 30px 0;
+      text-align: center;
+    }
+
+    .button {
+      background-color: #252D4A;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 15px 25px;
+      font-size: 16px;
+      border-radius: 5px;
+      display: inline-block;
+      transition: background-color 0.3s;
+    }
+
+    .button:hover {
+      background-color: #303F73;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 12px;
+      color: #999999;
+    }
+
+    .footer a {
+      color: #303F73;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .header-title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+        <div class="header-title">
+            <svg xmlns="http://www.w3.org/2000/svg"  width="32" height="32" fill="#fff" viewBox="0 0 256 256"><path d="M231.65,194.55,198.46,36.75a16,16,0,0,0-19-12.39L132.65,34.42a16.08,16.08,0,0,0-12.3,19l33.19,157.8A16,16,0,0,0,169.16,224a16.25,16.25,0,0,0,3.38-.36l46.81-10.06A16.09,16.09,0,0,0,231.65,194.55ZM136,50.15c0-.06,0-.09,0-.09l46.8-10,3.33,15.87L139.33,66Zm6.62,31.47,46.82-10.05,3.34,15.9L146,97.53Zm6.64,31.57,46.82-10.06,13.3,63.24-46.82,10.06ZM216,197.94l-46.8,10-3.33-15.87L212.67,182,216,197.85C216,197.91,216,197.94,216,197.94ZM104,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V48A16,16,0,0,0,104,32ZM56,48h48V64H56Zm0,32h48v96H56Zm48,128H56V192h48v16Z"></path></svg>
+            <strong>Welcome to Book Wise</strong>
+        </div>
+    </div>
+    <div class="content">
+      <h2>Hello, #name#</h2>
+      <p>
+        We’re excited to have you on board! Click the button below to securely sign in to your account:
+      </p>
+      <div class="button-container">
+        <a href="#magic_link#" class="button">Sign In to Your Account</a>
+      </div>
+      <p>
+        This link is valid for the next <strong>15 minutes</strong>. If you didn’t request this, you can safely ignore this email.
+      </p>
+    </div>
+    <div class="footer">
+      <p>
+        Need help? Visit our <a href="www.google.com">Support Center</a> or contact us at <a href="mailto:support@example.com">support@example.com</a>.
+      </p>
+      <p>&copy; 2023 Book wise. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

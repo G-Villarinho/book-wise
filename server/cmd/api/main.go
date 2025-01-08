@@ -7,12 +7,15 @@ import (
 	"time"
 
 	"github.com/G-Villarinho/book-wise-api/cache"
+	"github.com/G-Villarinho/book-wise-api/clients"
 	"github.com/G-Villarinho/book-wise-api/cmd/api/handler"
 	"github.com/G-Villarinho/book-wise-api/config"
 	"github.com/G-Villarinho/book-wise-api/database"
 	"github.com/G-Villarinho/book-wise-api/internal"
 	"github.com/G-Villarinho/book-wise-api/repositories"
 	"github.com/G-Villarinho/book-wise-api/services"
+	"github.com/G-Villarinho/book-wise-api/services/email"
+	"github.com/G-Villarinho/book-wise-api/templates"
 	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -49,6 +52,25 @@ func main() {
 		log.Fatal("error to connect to redis: ", err)
 	}
 
+	rabbitMQClient, err := clients.NewRabbitMQClient(di)
+	if err != nil {
+		log.Fatal("error initializing RabbitMQ client: ", err)
+	}
+
+	if err := rabbitMQClient.Connect(); err != nil {
+		log.Fatal("error connecting to RabbitMQ: ", err)
+	}
+
+	defer func() {
+		if err := rabbitMQClient.Disconnect(); err != nil {
+			log.Println("error disconnecting from RabbitMQ:", err)
+		}
+	}()
+
+	internal.Provide(di, func(d *internal.Di) (clients.RabbitMQClient, error) {
+		return rabbitMQClient, nil
+	})
+
 	internal.Provide(di, func(d *internal.Di) (*gorm.DB, error) {
 		return db, nil
 	})
@@ -57,10 +79,19 @@ func main() {
 		return redisClient, nil
 	})
 
+	internal.Provide(di, clients.NewMailtrapClient)
+
+	internal.Provide(di, handler.NewAuthHandler)
 	internal.Provide(di, handler.NewUserHandler)
 
 	internal.Provide(di, cache.NewRedisCache)
+	internal.Provide(di, email.NewEmailService)
+	internal.Provide(di, templates.NewTemplateService)
 
+	internal.Provide(di, services.NewAuthService)
+	internal.Provide(di, services.NewQueueService)
+	internal.Provide(di, services.NewSessionService)
+	internal.Provide(di, services.NewTokenService)
 	internal.Provide(di, services.NewUserService)
 
 	internal.Provide(di, repositories.NewUserRepository)

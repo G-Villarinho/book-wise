@@ -9,6 +9,7 @@ import (
 
 func SetupRoutes(e *echo.Echo, di *internal.Di) {
 	setupUserRoutes(e, di)
+	setupAuthRoutes(e, di)
 }
 
 func setupUserRoutes(e *echo.Echo, di *internal.Di) {
@@ -20,4 +21,16 @@ func setupUserRoutes(e *echo.Echo, di *internal.Di) {
 	group := e.Group("/v1/users")
 
 	group.POST("", userHandler.CreateUser)
+}
+
+func setupAuthRoutes(e *echo.Echo, di *internal.Di) {
+	authHandler, err := internal.Invoke[AuthHandler](di)
+	if err != nil {
+		log.Fatal("error to create auth handler: ", err)
+	}
+
+	group := e.Group("/v1/auth")
+
+	group.POST("/sign-in", authHandler.SignIn)
+	group.GET("/link", authHandler.VeryfyMagicLink)
 }
