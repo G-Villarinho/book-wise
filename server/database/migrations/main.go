@@ -23,6 +23,9 @@ func main() {
 
 	if err := db.AutoMigrate(
 		&models.User{},
+		&models.Book{},
+		&models.Author{},
+		&models.Category{},
 	); err != nil {
 		log.Fatal("error to migrate: ", err)
 	}

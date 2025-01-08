@@ -1,19 +1,20 @@
 package models
 
 type Environment struct {
-	PrivateKey       string `env:"PRIVATE_KEY"`
-	PublicKey        string `env:"PUBLIC_KEY"`
-	Redis            RedisEnvironment
-	CloudFlare       CloudFlareEnvironment
-	Cache            CacheEnvironment
-	Email            EmailEnvironment
-	APIBaseURL       string `env:"API_BASE_URL"`
-	RedirectURL      string `env:"REDIRECT_URL"`
-	CookieName       string `env:"COOKIE_NAME"`
-	RabbitMQURL      string `env:"RABBITMQ_URL"`
-	APIPort          int    `env:"API_PORT"`
-	ConnectionString string `env:"CONNECTION_STRING"`
-	FrontURL         string `env:"FRONT_URL"`
+	PrivateKey        string `env:"PRIVATE_KEY"`
+	PublicKey         string `env:"PUBLIC_KEY"`
+	Redis             RedisEnvironment
+	CloudFlare        CloudFlareEnvironment
+	Cache             CacheEnvironment
+	Email             EmailEnvironment
+	APIBaseURL        string `env:"API_BASE_URL"`
+	RedirectURL       string `env:"REDIRECT_URL"`
+	CookieName        string `env:"COOKIE_NAME"`
+	RabbitMQURL       string `env:"RABBITMQ_URL"`
+	APIPort           int    `env:"API_PORT"`
+	ConnectionString  string `env:"CONNECTION_STRING"`
+	FrontURL          string `env:"FRONT_URL"`
+	GoogleBooksApiUrl string `env:"GOOGLE_BOOKS_URL_API"`
 }
 
 type RedisEnvironment struct {

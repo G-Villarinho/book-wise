@@ -6,10 +6,17 @@ import (
 	"github.com/G-Villarinho/book-wise-api/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 func NewMysqlConnection(ctx context.Context) (*gorm.DB, error) {
-	db, err := gorm.Open(mysql.Open(config.Env.ConnectionString), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(config.Env.ConnectionString), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix:   "",   // Sem prefixo
+			SingularTable: true, // Evita pluralização automática
+			NoLowerCase:   true, // Desativa snake_case
+		},
+	})
 	if err != nil {
 		return nil, err
 	}
