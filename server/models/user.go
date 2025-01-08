@@ -1,6 +1,10 @@
 package models
 
-import "database/sql"
+import (
+	"database/sql"
+
+	"github.com/google/uuid"
+)
 
 type Status string
 type Role string
@@ -26,4 +30,21 @@ type User struct {
 
 func (u *User) TableName() string {
 	return "Users"
+}
+
+type CreateUserPayload struct {
+	FullName string `json:"fullName" validate:"required,max=255"`
+	Email    string `json:"email" validate:"required,email,max=255"`
+}
+
+func (cup *CreateUserPayload) ToUser() *User {
+	ID, _ := uuid.NewV7()
+
+	return &User{
+		BaseModel: BaseModel{
+			ID: ID,
+		},
+		FullName: cup.FullName,
+		Email:    cup.Email,
+	}
 }

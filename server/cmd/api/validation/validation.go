@@ -3,12 +3,17 @@ package validation
 import (
 	"strings"
 
+	"github.com/G-Villarinho/book-wise-api/utils"
 	"github.com/go-playground/validator/v10"
 )
 
 type ValidationErrors map[string]string
 
 func ValidateStruct(s any) ValidationErrors {
+	if err := utils.TrimStrings(s); err != nil {
+		return ValidationErrors{"validation_setup": "error to set up custom validations"}
+	}
+
 	validate := validator.New()
 
 	if err := SetupCustomValidations(validate); err != nil {

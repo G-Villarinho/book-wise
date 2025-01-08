@@ -8,29 +8,29 @@ PUBLIC_KEY_FILE := ec_public_key.pem
 
 docker-up:
 	@echo "Subindo os serviços do Docker..."
-	docker-compose -f $(DOCKER_COMPOSE_FILE) up -d
+	docker compose -f $(DOCKER_COMPOSE_FILE) up -d
 	@echo "Serviços do Docker estão rodando."
 
 docker-down:
 	@echo "Derrubando os serviços do Docker..."
-	docker-compose -f $(DOCKER_COMPOSE_FILE) down
+	docker compose -f $(DOCKER_COMPOSE_FILE) down
 	@echo "Serviços do Docker foram parados."
 
 docker-rebuild:
 	@echo "Rebuildando os serviços do Docker..."
-	docker-compose -f $(DOCKER_COMPOSE_FILE) up --build -d
+	docker compose -f $(DOCKER_COMPOSE_FILE) up --build -d
 
 docker-clean:
 	@echo "Removendo os contêineres e volumes..."
-	docker-compose -f $(DOCKER_COMPOSE_FILE) down --volumes --remove-orphans	
+	docker compose -f $(DOCKER_COMPOSE_FILE) down --volumes --remove-orphans	
 
 run-app:
 	@echo "Iniciando a aplicação Go..."
-	go run $(MAIN_FILE)
+	@go run $(MAIN_FILE)
 
 start:
 	@echo "Iniciando aplicação Go..."
-	make run-app
+	@make run-app
 
 migration:
 	@echo "Rodando as migrações..."
