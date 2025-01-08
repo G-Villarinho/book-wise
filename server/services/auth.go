@@ -72,6 +72,10 @@ func (a *authService) SignIn(ctx context.Context, email string) error {
 		return models.ErrUserNotFound
 	}
 
+	if user.Status == models.Blocked {
+		return models.ErrUserBlocked
+	}
+
 	code, err := uuid.NewV7()
 	if err != nil {
 		return fmt.Errorf("generate code: %w", err)

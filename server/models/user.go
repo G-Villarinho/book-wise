@@ -11,6 +11,7 @@ var (
 	ErrUserNotFound          = errors.New("user not found in the database")
 	ErrEmailAlreadyExists    = errors.New("email already exists in the database")
 	ErrUserNotFoundInContext = errors.New("user not found in the context")
+	ErrUserBlocked           = errors.New("user is blocked")
 )
 
 type Status string

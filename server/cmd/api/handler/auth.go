@@ -66,7 +66,11 @@ func (a *authHandler) SignIn(ctx echo.Context) error {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrUserNotFound) {
-			return response.NewCustomValidationAPIErrorResponse(ctx, 404, "not_found", "Não foi encontrado um usuário com o e-mail informado. Por favor, verifique e tente novamente.")
+			return response.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Não foi encontrado um usuário com o e-mail informado. Por favor, verifique e tente novamente.")
+		}
+
+		if errors.Is(err, models.ErrUserBlocked) {
+			return response.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "user_blocked", "Sua conta está bloqueada. Entre em contato com o suporte para mais informações.")
 		}
 
 		return response.InternalServerAPIErrorResponse(ctx)
