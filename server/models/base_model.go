@@ -19,8 +19,3 @@ func (b *BaseModel) BeforeCreate(tx *gorm.DB) (err error) {
 	b.CreatedAt = time.Now().UTC()
 	return
 }
-
-func (b *BaseModel) BeforeUpdate(tx *gorm.DB) (err error) {
-	b.UpdatedAt = sql.NullTime{Time: time.Now().UTC(), Valid: true}
-	return
-}

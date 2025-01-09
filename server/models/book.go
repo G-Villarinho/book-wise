@@ -1,6 +1,10 @@
 package models
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/google/uuid"
+)
 
 var (
 	ErrSearchBooksEmpty = errors.New("no books found matching the search criteria")
@@ -14,7 +18,8 @@ type Book struct {
 	TotalEvaluations uint   `gorm:"column:TotalEvaluations;type:INT UNSIGNED;not null;default:0"`
 	CoverImageURL    string `gorm:"column:Avatar;type:varchar(500);not null"`
 
-	Authors []Author `gorm:"many2many:BookAuthors;"`
+	Categories []Category `gorm:"many2many:BookCategories;"`
+	Authors    []Author   `gorm:"many2many:BookAuthors;"`
 }
 
 func (b *Book) TableName() string {
@@ -37,4 +42,30 @@ type BookSearchResponse struct {
 	CoverImageURL string   `json:"coverImageURL"`
 	Authors       []string `json:"authors"`
 	Categories    []string `json:"categories"`
+}
+
+type BookResponse struct {
+	TotalPages       uint     `json:"totalPages"`
+	TotalEvaluations uint     `json:"totalEvaluations"`
+	Title            string   `json:"title"`
+	Description      string   `json:"description"`
+	CoverImageURL    string   `json:"coverImageURL"`
+	Authors          []string `json:"authors"`
+	Categories       []string `json:"categories"`
+}
+
+func (payload *CreateBookPayload) ToBook(authors []Author, categories []Category) *Book {
+	ID, _ := uuid.NewV7()
+
+	return &Book{
+		BaseModel: BaseModel{
+			ID: ID,
+		},
+		Title:         payload.Title,
+		Description:   payload.Description,
+		TotalPages:    payload.TotalPages,
+		CoverImageURL: payload.CoverImageURL,
+		Authors:       authors,
+		Categories:    categories,
+	}
 }

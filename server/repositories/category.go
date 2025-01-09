@@ -19,7 +19,7 @@ type categoryRepository struct {
 	DB *gorm.DB
 }
 
-func NewCategoryRepositry(di *internal.Di) (CategoryRepository, error) {
+func NewCategoryRepository(di *internal.Di) (CategoryRepository, error) {
 	db, err := internal.Invoke[*gorm.DB](di)
 	if err != nil {
 		return nil, err

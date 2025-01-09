@@ -91,12 +91,17 @@ func main() {
 	internal.Provide(di, templates.NewTemplateService)
 
 	internal.Provide(di, services.NewAuthService)
+	internal.Provide(di, services.NewAuthorService)
 	internal.Provide(di, services.NewBookService)
+	internal.Provide(di, services.NewCategoryService)
 	internal.Provide(di, services.NewQueueService)
 	internal.Provide(di, services.NewSessionService)
 	internal.Provide(di, services.NewTokenService)
 	internal.Provide(di, services.NewUserService)
 
+	internal.Provide(di, repositories.NewAuthorRepository)
+	internal.Provide(di, repositories.NewBookRepository)
+	internal.Provide(di, repositories.NewCategoryRepository)
 	internal.Provide(di, repositories.NewUserRepository)
 
 	handler.SetupRoutes(e, di)

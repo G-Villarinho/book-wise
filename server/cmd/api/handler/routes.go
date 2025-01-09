@@ -45,4 +45,5 @@ func setupBookRoutes(e *echo.Echo, di *internal.Di) {
 	group := e.Group("/v1/books")
 
 	group.GET("/search", bookHandler.SearchBooks)
+	group.POST("", bookHandler.CreateBook)
 }
