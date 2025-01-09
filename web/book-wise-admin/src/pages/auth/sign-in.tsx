@@ -1,8 +1,52 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AuthContext } from "@/context/AuthContext";
 import { BookText } from "lucide-react";
+import { useContext } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const signInSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Por favor, informe seu e-mail")
+    .email("Por favor, insira um e-mail válido"),
+});
+
+type SignInSchema = z.infer<typeof signInSchema>;
 
 export function SignIn() {
+  const { signIn } = useContext(AuthContext);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm<SignInSchema>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  async function handleAuthenticate({ email }: SignInSchema) {
+    try {
+      await signIn({ email });
+
+      toast.success("Enviamos um link de autenticação para seu e-mail.", {
+        action: {
+          label: "Reenviar",
+          onClick: () => signIn({ email }),
+        },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (err) {
+      toast.error("Credenciais inválidas");
+    }
+  }
+
   return (
     <div className="font-[sans-serif]">
       <div className="min-h-screen flex fle-col items-center justify-center py-6 px-4">
@@ -19,7 +63,7 @@ export function SignIn() {
             <p className="text-sm mt-12 text-gray-800">
               Não tem uma conta de administrador?{" "}
               <a
-                href="javascript:void(0);"
+                href="#"
                 className="text-sky-600 font-semibold hover:underline ml-1"
               >
                 Solicite acesso aqui
@@ -27,7 +71,10 @@ export function SignIn() {
             </p>
           </div>
 
-          <form className="max-w-md md:ml-auto w-full">
+          <form
+            className="max-w-md md:ml-auto w-full"
+            onSubmit={handleSubmit(handleAuthenticate)}
+          >
             <h3 className="text-gray-800 text-3xl font-extrabold mb-8">
               Entrar
             </h3>
@@ -45,12 +92,17 @@ export function SignIn() {
                   autoCorrect="off"
                   className="text-lg py-5"
                   placeholder="Ex: @gmail, @outlook, @yahoo, etc."
+                  {...register("email")}
                 />
               </div>
             </div>
 
             <div className="!mt-8">
-              <Button className="w-full font-semibold" size="lg">
+              <Button
+                className="w-full font-semibold"
+                size="lg"
+                disabled={isSubmitting}
+              >
                 Acessar painel
               </Button>
             </div>
