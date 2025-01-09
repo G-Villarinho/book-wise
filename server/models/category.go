@@ -1,5 +1,11 @@
 package models
 
+import "errors"
+
+var (
+	ErrCategoriesNotFound = errors.New("categories not found in database")
+)
+
 type Category struct {
 	BaseModel
 	Name           string `gorm:"column:Name;type:varchar(255);not null"`
