@@ -69,9 +69,8 @@ func (c *categoryService) FindOrCreateCategories(ctx context.Context, names []st
 	}
 
 	if len(newCategories) > 0 {
-		err = c.categoryRepository.CreateBatch(ctx, newCategories)
-		if err != nil {
-			return nil, err
+		if err = c.categoryRepository.CreateBatch(ctx, newCategories); err != nil {
+			return nil, fmt.Errorf("create batch: %v", err)
 		}
 	}
 

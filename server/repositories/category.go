@@ -42,8 +42,7 @@ func (c *categoryRepository) CreateBatch(ctx context.Context, categories []model
 func (c *categoryRepository) GetCategoriesByNormalizeNames(ctx context.Context, normalizedNames []string) ([]models.Category, error) {
 	var categories []models.Category
 
-	err := c.DB.Where("NormalizedName IN ?", normalizedNames).Find(&categories).Error
-	if err != nil {
+	if err := c.DB.Where("NormalizedName IN ?", normalizedNames).Find(&categories).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

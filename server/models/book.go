@@ -22,6 +22,12 @@ func (b *Book) TableName() string {
 }
 
 type CreateBookPayload struct {
+	Title         string   `json:"title" validate:"required,min=1,max=500"`
+	Description   string   `json:"description" validate:"required,min=1,max=2000"`
+	TotalPages    uint     `json:"totalPages" validate:"required,min=1"`
+	CoverImageURL string   `json:"coverImageURL" validate:"required,url,max=500"`
+	Authors       []string `json:"authors" validate:"required,min=1,dive,required,min=1,max=255"`
+	Categories    []string `json:"categories" validate:"required,min=1,dive,required,min=1,max=255"`
 }
 
 type BookSearchResponse struct {
