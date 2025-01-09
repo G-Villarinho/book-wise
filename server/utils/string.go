@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 	"strings"
+	"unicode"
 )
 
 func TrimStrings(payload any) error {
@@ -33,4 +34,16 @@ func TrimStrings(payload any) error {
 	}
 
 	return nil
+}
+
+func NormalizeString(str string) string {
+	normalized := strings.ToLower(strings.TrimSpace(str))
+
+	var result []rune
+	for _, r := range normalized {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) || unicode.IsSpace(r) {
+			result = append(result, r)
+		}
+	}
+	return string(result)
 }

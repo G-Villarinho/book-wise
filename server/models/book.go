@@ -21,6 +21,9 @@ func (b *Book) TableName() string {
 	return "Books"
 }
 
+type CreateBookPayload struct {
+}
+
 type BookSearchResponse struct {
 	TotalPages    uint     `json:"totalPages"`
 	Title         string   `json:"title"`
