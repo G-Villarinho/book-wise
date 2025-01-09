@@ -1,14 +1,15 @@
 import { RouterProvider } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
 import { router } from "./routes";
 import { Toaster } from "sonner";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 
 function App() {
   return (
-    <AuthProvider>
+    <HelmetProvider>
+      <Helmet titleTemplate="%s | book.wise" />
       <RouterProvider router={router} />
       <Toaster richColors />
-    </AuthProvider>
+    </HelmetProvider>
   );
 }
 
