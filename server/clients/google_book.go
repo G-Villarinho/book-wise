@@ -7,6 +7,7 @@ import (
 
 	"github.com/G-Villarinho/book-wise-api/config"
 	"github.com/G-Villarinho/book-wise-api/internal"
+	"github.com/G-Villarinho/book-wise-api/models"
 	jsoniter "github.com/json-iterator/go"
 )
 
@@ -34,6 +35,19 @@ type Volume struct {
 	} `json:"volumeInfo"`
 }
 
+func (v *Volume) ToBookSearchResponse() *models.BookSearchResponse {
+	info := v.VolumeInfo
+
+	return &models.BookSearchResponse{
+		TotalPages:    uint(info.PageCount),
+		Title:         info.Title,
+		Description:   info.Description,
+		CoverImageURL: info.ImageLinks.Thumbnail,
+		Authors:       info.Authors,
+		Categories:    info.Categories,
+	}
+}
+
 type GoogleBookClient interface {
 	SearchBooks(query string, startIndex int) ([]Volume, error)
 }
@@ -51,7 +65,14 @@ func NewGoogleBookClient(di *internal.Di) (GoogleBookClient, error) {
 func (g *googleBookClient) SearchBooks(query string, startIndex int) ([]Volume, error) {
 	escapedQuery := url.QueryEscape(query)
 
-	url := fmt.Sprintf("%s?q=%s&maxResults=5&startIndex=%d", config.Env.GoogleBooksApiUrl, escapedQuery, startIndex)
+	url := ""
+	if query == "" {
+		url = fmt.Sprintf("%s/volumes?q=*&maxResults=5&startIndex=%d", config.Env.GoogleBooksApiUrl, startIndex)
+	} else {
+		url = fmt.Sprintf("%s/volumes?q=%s&maxResults=5&startIndex=%d", config.Env.GoogleBooksApiUrl, escapedQuery, startIndex)
+	}
+
+	fmt.Println(url)
 
 	var httpClient http.Client
 

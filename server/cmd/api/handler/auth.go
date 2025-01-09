@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/G-Villarinho/book-wise-api/cmd/api/response"
+	"github.com/G-Villarinho/book-wise-api/cmd/api/responses"
 	"github.com/G-Villarinho/book-wise-api/cmd/api/validation"
 	"github.com/G-Villarinho/book-wise-api/config"
 	"github.com/G-Villarinho/book-wise-api/internal"
@@ -48,32 +48,32 @@ func (a *authHandler) SignIn(ctx echo.Context) error {
 	var payload models.SignInPayload
 	if err := jsoniter.NewDecoder(ctx.Request().Body).Decode(&payload); err != nil {
 		log.Warn("Error to decode JSON payload", slog.String("error", err.Error()))
-		return response.CannotBindPayloadAPIErrorResponse(ctx)
+		return responses.CannotBindPayloadAPIErrorResponse(ctx)
 	}
 
 	validationErrors, err := validation.ValidateStruct(&payload)
 	if err != nil {
 		log.Warn(err.Error())
-		return response.CannotBindPayloadAPIErrorResponse(ctx)
+		return responses.CannotBindPayloadAPIErrorResponse(ctx)
 	}
 
 	if validationErrors != nil {
 		log.Warn("Error to validate JSON payload")
-		return response.NewValidationErrorResponse(ctx, validationErrors)
+		return responses.NewValidationErrorResponse(ctx, validationErrors)
 	}
 
 	if err := a.authService.SignIn(ctx.Request().Context(), payload.Email); err != nil {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrUserNotFound) {
-			return response.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Não foi encontrado um usuário com o e-mail informado. Por favor, verifique e tente novamente.")
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Não foi encontrado um usuário com o e-mail informado. Por favor, verifique e tente novamente.")
 		}
 
 		if errors.Is(err, models.ErrUserBlocked) {
-			return response.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "user_blocked", "Sua conta está bloqueada. Entre em contato com o suporte para mais informações.")
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "user_blocked", "Sua conta está bloqueada. Entre em contato com o suporte para mais informações.")
 		}
 
-		return response.InternalServerAPIErrorResponse(ctx)
+		return responses.InternalServerAPIErrorResponse(ctx)
 	}
 
 	return ctx.NoContent(http.StatusOK)
@@ -87,18 +87,18 @@ func (a *authHandler) VeryfyMagicLink(ctx echo.Context) error {
 	code, err := uuid.Parse(ctx.QueryParam("code"))
 	if err != nil {
 		log.Warn("Invalid Magic Link code format")
-		return response.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "O código do link mágico está em um formato inválido. Verifique o link e tente novamente.")
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "O código do link mágico está em um formato inválido. Verifique o link e tente novamente.")
 	}
 
 	redirectURL := ctx.QueryParam("redirect")
 	if redirectURL == "" {
 		log.Warn("Redirect URL is missing")
-		return response.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "É necessário informar uma URL de redirecionamento para continuar.")
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "É necessário informar uma URL de redirecionamento para continuar.")
 	}
 
 	if redirectURL != config.Env.RedirectURL {
 		log.Warn("Redirect URL is invalid")
-		return response.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "A URL de redirecionamento informada não é válida. Entre em contato com o suporte.")
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "A URL de redirecionamento informada não é válida. Entre em contato com o suporte.")
 	}
 
 	token, err := a.authService.VeryfyMagicLink(ctx.Request().Context(), code)
@@ -106,14 +106,14 @@ func (a *authHandler) VeryfyMagicLink(ctx echo.Context) error {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrMagicLinkNotFound) {
-			return response.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "O link mágico expirou ou é inválido. Solicite um novo para acessar.")
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "O link mágico expirou ou é inválido. Solicite um novo para acessar.")
 		}
 
 		if errors.Is(err, models.ErrUserNotFound) {
-			return response.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Não encontramos nenhum usuário associado a este link mágico. Verifique e tente novamente.")
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Não encontramos nenhum usuário associado a este link mágico. Verifique e tente novamente.")
 		}
 
-		return response.InternalServerAPIErrorResponse(ctx)
+		return responses.InternalServerAPIErrorResponse(ctx)
 	}
 
 	cookie := new(http.Cookie)
@@ -136,7 +136,7 @@ func (a *authHandler) SignOut(ctx echo.Context) error {
 
 	if err := a.authService.SignOut(ctx.Request().Context()); err != nil {
 		log.Error(err.Error())
-		return response.InternalServerAPIErrorResponse(ctx)
+		return responses.InternalServerAPIErrorResponse(ctx)
 	}
 
 	cookie := new(http.Cookie)

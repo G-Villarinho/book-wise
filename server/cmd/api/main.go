@@ -80,15 +80,18 @@ func main() {
 	})
 
 	internal.Provide(di, clients.NewMailtrapClient)
+	internal.Provide(di, clients.NewGoogleBookClient)
 
 	internal.Provide(di, handler.NewAuthHandler)
+	internal.Provide(di, handler.NewBookHandler)
 	internal.Provide(di, handler.NewUserHandler)
 
-	internal.Provide(di, cache.NewRedisCache)
 	internal.Provide(di, email.NewEmailService)
+	internal.Provide(di, cache.NewRedisCache)
 	internal.Provide(di, templates.NewTemplateService)
 
 	internal.Provide(di, services.NewAuthService)
+	internal.Provide(di, services.NewBookService)
 	internal.Provide(di, services.NewQueueService)
 	internal.Provide(di, services.NewSessionService)
 	internal.Provide(di, services.NewTokenService)

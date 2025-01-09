@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/G-Villarinho/book-wise-api/cmd/api/response"
+	"github.com/G-Villarinho/book-wise-api/cmd/api/responses"
 	"github.com/G-Villarinho/book-wise-api/config"
 	"github.com/G-Villarinho/book-wise-api/internal"
 	"github.com/G-Villarinho/book-wise-api/models"
@@ -20,14 +20,14 @@ func EnsureAuthenticated(di *internal.Di) echo.MiddlewareFunc {
 			sessionService, err := internal.Invoke[services.SessionService](di)
 			if err != nil {
 				slog.Error(err.Error())
-				return response.InternalServerAPIErrorResponse(ctx)
+				return responses.InternalServerAPIErrorResponse(ctx)
 			}
 
 			authToken, err := getAuthToken(ctx)
 			if err != nil {
 				slog.Error(err.Error())
 				clearAuthToken(ctx)
-				return response.AccessDeniedAPIErrorResponse(ctx)
+				return responses.AccessDeniedAPIErrorResponse(ctx)
 			}
 
 			session, err := sessionService.GetSessionByToken(ctx.Request().Context(), authToken)
@@ -36,10 +36,10 @@ func EnsureAuthenticated(di *internal.Di) echo.MiddlewareFunc {
 
 				if errors.Is(err, models.ErrSessionNotFound) {
 					clearAuthToken(ctx)
-					return response.AccessDeniedAPIErrorResponse(ctx)
+					return responses.AccessDeniedAPIErrorResponse(ctx)
 				}
 
-				return response.InternalServerAPIErrorResponse(ctx)
+				return responses.InternalServerAPIErrorResponse(ctx)
 			}
 
 			ctx.SetRequest(ctx.Request().WithContext(context.WithValue(ctx.Request().Context(), internal.SessionKey, *session)))

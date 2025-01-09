@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/G-Villarinho/book-wise-api/cmd/api/response"
+	"github.com/G-Villarinho/book-wise-api/cmd/api/responses"
 	"github.com/G-Villarinho/book-wise-api/cmd/api/validation"
 	"github.com/G-Villarinho/book-wise-api/internal"
 	"github.com/G-Villarinho/book-wise-api/models"
@@ -44,28 +44,28 @@ func (u *userHandler) CreateUser(ctx echo.Context) error {
 	var payload models.CreateUserPayload
 	if err := jsoniter.NewDecoder(ctx.Request().Body).Decode(&payload); err != nil {
 		log.Warn("Error to decode JSON payload", slog.String("error", err.Error()))
-		return response.CannotBindPayloadAPIErrorResponse(ctx)
+		return responses.CannotBindPayloadAPIErrorResponse(ctx)
 	}
 
 	validationErrors, err := validation.ValidateStruct(&payload)
 	if err != nil {
 		log.Warn(err.Error())
-		return response.CannotBindPayloadAPIErrorResponse(ctx)
+		return responses.CannotBindPayloadAPIErrorResponse(ctx)
 	}
 
 	if validationErrors != nil {
 		log.Warn("Error to validate JSON payload")
-		return response.NewValidationErrorResponse(ctx, validationErrors)
+		return responses.NewValidationErrorResponse(ctx, validationErrors)
 	}
 
 	if err := u.userService.CreateUser(ctx.Request().Context(), payload); err != nil {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrEmailAlreadyExists) {
-			return response.NewCustomValidationAPIErrorResponse(ctx, http.StatusConflict, "Conflito", "O e-mail informado já está em uso. Por favor, tente novamente com outro e-mail.")
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusConflict, "Conflito", "O e-mail informado já está em uso. Por favor, tente novamente com outro e-mail.")
 		}
 
-		return response.InternalServerAPIErrorResponse(ctx)
+		return responses.InternalServerAPIErrorResponse(ctx)
 	}
 
 	return ctx.NoContent(http.StatusCreated)

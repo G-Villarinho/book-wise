@@ -10,6 +10,7 @@ import (
 func SetupRoutes(e *echo.Echo, di *internal.Di) {
 	setupUserRoutes(e, di)
 	setupAuthRoutes(e, di)
+	setupBookRoutes(e, di)
 }
 
 func setupUserRoutes(e *echo.Echo, di *internal.Di) {
@@ -33,4 +34,15 @@ func setupAuthRoutes(e *echo.Echo, di *internal.Di) {
 
 	group.POST("/sign-in", authHandler.SignIn)
 	group.GET("/link", authHandler.VeryfyMagicLink)
+}
+
+func setupBookRoutes(e *echo.Echo, di *internal.Di) {
+	bookHandler, err := internal.Invoke[BookHandler](di)
+	if err != nil {
+		log.Fatal("error to create book handler: ", err)
+	}
+
+	group := e.Group("/v1/books")
+
+	group.GET("/search", bookHandler.SearchBooks)
 }
