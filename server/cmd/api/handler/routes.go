@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/G-Villarinho/book-wise-api/internal"
+	"github.com/G-Villarinho/book-wise-api/middleware"
 	"github.com/labstack/echo/v4"
 )
 
@@ -33,6 +34,7 @@ func setupAuthRoutes(e *echo.Echo, di *internal.Di) {
 	group := e.Group("/v1/auth")
 
 	group.POST("/sign-in", authHandler.SignIn)
+	group.POST("/sign-out", authHandler.SignOut, middleware.EnsureAuthenticated(di))
 	group.GET("/link", authHandler.VeryfyMagicLink)
 }
 

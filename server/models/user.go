@@ -45,6 +45,13 @@ type CreateUserPayload struct {
 	Email    string `json:"email" validate:"required,email,max=255"`
 }
 
+type UserResponse struct {
+	ID       string `json:"id"`
+	FullName string `json:"full_name"`
+	Email    string `json:"email"`
+	Avatar   string `json:"avatar,omitempty"`
+}
+
 func (cup *CreateUserPayload) ToUser() *User {
 	ID, _ := uuid.NewV7()
 
