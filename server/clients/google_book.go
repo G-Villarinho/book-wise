@@ -72,8 +72,6 @@ func (g *googleBookClient) SearchBooks(query string, startIndex int) ([]Volume, 
 		url = fmt.Sprintf("%s/volumes?q=%s&maxResults=5&startIndex=%d", config.Env.GoogleBooksApiUrl, escapedQuery, startIndex)
 	}
 
-	fmt.Println(url)
-
 	var httpClient http.Client
 
 	resp, err := httpClient.Get(url)
