@@ -38,7 +38,16 @@ type Volume struct {
 func (v *Volume) ToBookSearchResponse() *models.BookSearchResponse {
 	info := v.VolumeInfo
 
+	if len(info.Authors) == 0 {
+		info.Authors = []string{"Autor desconhecido"}
+	}
+
+	if len(info.Categories) == 0 {
+		info.Categories = []string{"Categoria desconhecida"}
+	}
+
 	return &models.BookSearchResponse{
+		Key:           v.ID,
 		TotalPages:    uint(info.PageCount),
 		Title:         info.Title,
 		Description:   info.Description,
@@ -67,9 +76,9 @@ func (g *googleBookClient) SearchBooks(query string, startIndex int) ([]Volume, 
 
 	url := ""
 	if query == "" {
-		url = fmt.Sprintf("%s/volumes?q=*&maxResults=10&startIndex=%d", config.Env.GoogleBooksApiUrl, startIndex)
+		url = fmt.Sprintf("%s/volumes?q=*&maxResults=14&startIndex=%d", config.Env.GoogleBooksApiUrl, startIndex)
 	} else {
-		url = fmt.Sprintf("%s/volumes?q=%s&maxResults=10&startIndex=%d", config.Env.GoogleBooksApiUrl, escapedQuery, startIndex)
+		url = fmt.Sprintf("%s/volumes?q=%s&maxResults=14&startIndex=%d", config.Env.GoogleBooksApiUrl, escapedQuery, startIndex)
 	}
 
 	var httpClient http.Client

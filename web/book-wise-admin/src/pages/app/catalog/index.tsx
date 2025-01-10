@@ -6,37 +6,32 @@ import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
 import { searchBooks } from "@/api/search-book";
 import { BookCard } from "./book-card";
+import { BookCardSkeleton } from "./book-card-skeleton";
 
 export function Catalog() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const authorOrTitle = searchParams.get("authorOrTitle");
 
-  const page = z.coerce
-    .number()
-    .transform((page) => page - 1)
-    .parse(searchParams.get("page") ?? "1");
+  const page =
+    z
+      .string()
+      .regex(/^\d+$/, "Invalid page")
+      .transform(Number)
+      .catch(() => 1)
+      .parse(searchParams.get("page") ?? "1") - 1;
 
-  // Realiza a consulta dos livros com a pesquisa e a página atual
   const {
     data: books,
     isLoading,
     isFetching,
   } = useQuery({
-    queryKey: ["books", authorOrTitle, page],
+    queryKey: ["books", authorOrTitle || "", page],
     queryFn: () =>
       searchBooks({
-        authorOrTitle,
+        authorOrTitle: authorOrTitle || "",
         page,
       }),
   });
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  function handlePaginate(pageIndex: number) {
-    setSearchParams((prev) => {
-      prev.set("page", (pageIndex + 1).toString());
-      return prev;
-    });
-  }
 
   return (
     <div>
@@ -47,19 +42,18 @@ export function Catalog() {
       >
         <SearchInput />
       </Header>
+
       <div className="mt-8">
         {isLoading || isFetching ? (
-          <p>Carregando...</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
+            {Array.from({ length: 14 }).map((_, index) => (
+              <BookCardSkeleton key={index} />
+            ))}
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
             {books?.map((book) => (
-              <BookCard
-                key={book.title}
-                title={book.title}
-                authors={book.authors}
-                description={book.description}
-                coverImageUrl={book.coverImageURL}
-              />
+              <BookCard key={book.key} coverImageUrl={book.coverImageURL} />
             ))}
           </div>
         )}

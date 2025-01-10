@@ -6,6 +6,7 @@ export interface SearchBookQuery {
 }
 
 interface SearchBookResponse {
+  key: string;
   totalPages: number;
   title: string;
   description: string;

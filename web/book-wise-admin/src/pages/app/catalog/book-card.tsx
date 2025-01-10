@@ -1,38 +1,25 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import placeholer from "../../../assets/book-placeholder.png";
 
 interface BookCardProps {
-  title: string;
-  authors: string[];
-  description: string;
   coverImageUrl: string;
 }
 
-export function BookCard({
-  title,
-  authors,
-  description,
-  coverImageUrl,
-}: BookCardProps) {
+export function BookCard({ coverImageUrl }: BookCardProps) {
+  const image = coverImageUrl !== "" ? coverImageUrl : placeholer;
+
   return (
-    <Card className="max-w-[220px] rounded-lg border bg-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-      {/* Card Header com a capa do livro */}
-      <CardHeader className="relative overflow-hidden rounded-t-lg">
+    <div className="relative max-w-[220px] rounded-lg bg-white shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer">
+      <div className="relative">
         <img
-          src={coverImageUrl}
-          alt={title}
+          src={image}
+          alt="Capa do livro"
           className="w-full h-[300px] object-cover rounded-t-lg shadow-md"
         />
-      </CardHeader>
 
-      {/* Detalhes do livro */}
-      <CardContent className="p-3 text-center">
-        <h1 className="text-lg font-semibold text-gray-900">{title}</h1>
-        <span className="text-sm text-gray-600">{authors.join(", ")}</span>
-        <p className="text-xs text-gray-500 mt-2 line-clamp-3">{description}</p>
-      </CardContent>
+        <div className="absolute top-0 right-0 bottom-0 w-3 bg-gradient-to-r from-transparent via-transparent to-gray-200 rounded-tr-lg" />
+      </div>
 
-      {/* Adicionando um efeito de "livro" com a borda lateral */}
-      <div className="absolute top-0 right-0 bottom-0 w-3 bg-gradient-to-r from-transparent via-transparent to-gray-200 rounded-tr-lg" />
-    </Card>
+      <div className="absolute top-0 left-0 right-0 bottom-0 border-2 border-gray-300 rounded-lg z-10" />
+    </div>
   );
 }

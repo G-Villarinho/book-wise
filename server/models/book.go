@@ -36,6 +36,7 @@ type CreateBookPayload struct {
 }
 
 type BookSearchResponse struct {
+	Key           string   `json:"key"`
 	TotalPages    uint     `json:"totalPages"`
 	Title         string   `json:"title"`
 	Description   string   `json:"description"`
