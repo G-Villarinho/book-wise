@@ -67,9 +67,9 @@ func (g *googleBookClient) SearchBooks(query string, startIndex int) ([]Volume, 
 
 	url := ""
 	if query == "" {
-		url = fmt.Sprintf("%s/volumes?q=*&maxResults=5&startIndex=%d", config.Env.GoogleBooksApiUrl, startIndex)
+		url = fmt.Sprintf("%s/volumes?q=*&maxResults=10&startIndex=%d", config.Env.GoogleBooksApiUrl, startIndex)
 	} else {
-		url = fmt.Sprintf("%s/volumes?q=%s&maxResults=5&startIndex=%d", config.Env.GoogleBooksApiUrl, escapedQuery, startIndex)
+		url = fmt.Sprintf("%s/volumes?q=%s&maxResults=10&startIndex=%d", config.Env.GoogleBooksApiUrl, escapedQuery, startIndex)
 	}
 
 	var httpClient http.Client

@@ -2,26 +2,29 @@ import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export function SearchInput() {
   const [value, setValue] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const debouncedValue = useDebounce(value, 500);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (debouncedValue) {
-      navigate({
-        pathname: window.location.pathname,
-        search: `?q=${debouncedValue}&page=1`,
+      setSearchParams((prev) => {
+        prev.set("authorOrTitle", debouncedValue);
+        prev.set("page", "1");
+        return prev;
       });
-    } else {
+
       navigate({
         pathname: window.location.pathname,
-        search: "",
+        search: `?${searchParams.toString()}`,
       });
     }
-  }, [debouncedValue, navigate]);
+  }, [debouncedValue, navigate, searchParams, setSearchParams]);
 
   return (
     <div className="relative">

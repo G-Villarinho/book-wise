@@ -5,8 +5,9 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { api } from "@/lib/axios";
 import { Helmet } from "react-helmet-async";
+import { useMutation } from "@tanstack/react-query";
+import { signIn } from "@/api/sign-in";
 
 const signInSchema = z.object({
   email: z
@@ -21,7 +22,7 @@ export function SignIn() {
   const {
     register,
     handleSubmit,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
   } = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -29,18 +30,21 @@ export function SignIn() {
     },
   });
 
+  const { mutateAsync: authenticate } = useMutation({
+    mutationFn: signIn,
+  });
+
   async function handleAuthenticate({ email }: SignInSchema) {
     try {
-      await api.post("auth/sign-in", { email });
+      await authenticate({ email });
 
       toast.success("Enviamos um link de autenticação para seu e-mail.", {
         action: {
           label: "Reenviar",
-          onClick: () => api.post("auth/sign-in", { email }),
+          onClick: () => authenticate({ email }),
         },
       });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
+    } catch {
       toast.error("Credenciais inválidas");
     }
   }
@@ -94,6 +98,11 @@ export function SignIn() {
                     placeholder="Ex: @gmail, @outlook, @yahoo, etc."
                     {...register("email")}
                   />
+                  {errors.email && (
+                    <p className="text-sm text-red-600">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
