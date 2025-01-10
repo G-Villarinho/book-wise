@@ -9,7 +9,7 @@ const guestRoutes = [
   },
   {
     icon: Compass,
-    label: "Browse",
+    label: "Catálago",
     href: "/search",
   },
 ];
