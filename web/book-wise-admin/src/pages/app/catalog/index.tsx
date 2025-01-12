@@ -4,20 +4,20 @@ import { SearchInput } from "./search-input";
 import { useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
-import { searchBooks } from "@/api/search-book";
+import { searchExternalBooks } from "@/api/search-external-book";
 import { BookCard } from "./book-card";
 import { BookCardSkeleton } from "./book-card-skeleton";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export function Catalog() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const authorOrTitle = searchParams.get("authorOrTitle");
 
   const page =
     z
       .string()
-      .regex(/^\d+$/, "Invalid page")
       .transform(Number)
-      .catch(() => 1)
       .parse(searchParams.get("page") ?? "1") - 1;
 
   const {
@@ -27,17 +27,24 @@ export function Catalog() {
   } = useQuery({
     queryKey: ["books", authorOrTitle || "", page],
     queryFn: () =>
-      searchBooks({
+      searchExternalBooks({
         authorOrTitle: authorOrTitle || "",
         page,
       }),
   });
 
+  function handlePaginate(newPage: number) {
+    setSearchParams((prev) => {
+      prev.set("page", (newPage + 1).toString());
+      return prev;
+    });
+  }
+
   return (
     <div>
-      <Helmet title="Catálago" />
+      <Helmet title="Catálogo" />
       <Header
-        title="Catálago de Livros"
+        title="Catálogo de Livros"
         subtitle="Explore e adicione os livros de seu interesse ao portal."
       >
         <SearchInput />
@@ -57,6 +64,25 @@ export function Catalog() {
             ))}
           </div>
         )}
+      </div>
+
+      <div className="flex items-center gap-8 justify-between p-4">
+        <Button
+          variant="outline"
+          onClick={() => handlePaginate(page - 1)}
+          disabled={page === 0}
+        >
+          <ChevronLeft size={22} />
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => handlePaginate(page + 1)}
+          disabled={books?.length === 0}
+        >
+          Next
+          <ChevronRight size={22} />
+        </Button>
       </div>
     </div>
   );

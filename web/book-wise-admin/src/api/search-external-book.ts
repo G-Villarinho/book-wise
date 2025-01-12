@@ -15,13 +15,19 @@ interface SearchBookResponse {
   categories: string[];
 }
 
-export async function searchBooks({ authorOrTitle, page }: SearchBookQuery) {
-  const response = await api.get<SearchBookResponse[]>("books/search", {
-    params: {
-      q: authorOrTitle || "",
-      page: page,
-    },
-  });
+export async function searchExternalBooks({
+  authorOrTitle,
+  page,
+}: SearchBookQuery) {
+  const response = await api.get<SearchBookResponse[]>(
+    "books/external/search",
+    {
+      params: {
+        q: authorOrTitle || "",
+        page: page,
+      },
+    }
+  );
 
   return response.data;
 }

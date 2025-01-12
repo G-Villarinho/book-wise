@@ -31,12 +31,17 @@ export const queryClient = new QueryClient({
     mutations: {
       onError(error) {
         if (isAxiosError(error)) {
-          // eslint-disable-next-line no-unsafe-optional-chaining
-          if ("message" in error.response?.data) {
-            toast.error(error.response?.data.message);
+          const apiError = error.response?.data;
+
+          if (apiError && apiError.details) {
+            toast.error(apiError.details);
+          } else if (apiError && apiError.message) {
+            toast.error(apiError.message);
           } else {
             toast.error("Erro ao processar operação!");
           }
+        } else {
+          toast.error("Erro inesperado, tente novamente.");
         }
       },
     },

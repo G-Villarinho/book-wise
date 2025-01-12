@@ -1,14 +1,14 @@
-import placeholer from "../../../assets/book-placeholder.png";
+import placeholder from "@/assets/book-placeholder.png";
 
 interface BookCardProps {
   coverImageUrl: string;
 }
 
 export function BookCard({ coverImageUrl }: BookCardProps) {
-  const image = coverImageUrl !== "" ? coverImageUrl : placeholer;
+  const image = coverImageUrl !== "" ? coverImageUrl : placeholder;
 
   return (
-    <div className="relative max-w-[220px] rounded-lg bg-white shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer">
+    <div className="relative max-w-[220px] rounded-lg bg-white shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer group">
       <div className="relative">
         <img
           src={image}
@@ -20,6 +20,12 @@ export function BookCard({ coverImageUrl }: BookCardProps) {
       </div>
 
       <div className="absolute top-0 left-0 right-0 bottom-0 border-2 border-gray-300 rounded-lg z-10" />
+
+      <div className="absolute top-0 left-0 right-0 bottom-0 bg-gray-100 rounded-lg opacity-0 group-hover:opacity-90 flex items-center justify-center transition-opacity duration-200 z-20">
+        <span className="text-sm font-bold text-gray-800">
+          Adicionar livro ao portal
+        </span>
+      </div>
     </div>
   );
 }
