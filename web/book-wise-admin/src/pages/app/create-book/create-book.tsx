@@ -4,11 +4,12 @@ import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/header";
 import { CreateBookForm } from "./create-book-form";
+import { CreateBookFormSkeleton } from "./create-book-form-skeleton";
 
 export function CreateBook() {
   const { externalBookId } = useParams();
 
-  const { data: book } = useQuery({
+  const { data: book, isLoading } = useQuery({
     queryKey: ["book", externalBookId || ""],
     queryFn: () => getExternalBookById(externalBookId!),
     enabled: !!externalBookId,
@@ -22,7 +23,7 @@ export function CreateBook() {
         subtitle="Adicione um novo livro ao portal principal."
       />
 
-      <CreateBookForm book={book!} />
+      {isLoading ? <CreateBookFormSkeleton /> : <CreateBookForm book={book!} />}
     </>
   );
 }

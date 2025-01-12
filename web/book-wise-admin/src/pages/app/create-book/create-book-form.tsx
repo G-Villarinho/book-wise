@@ -7,11 +7,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { SearchBookResponse } from "@/@types/search-book-response";
+import { useMutation } from "@tanstack/react-query";
+import { CreateBook } from "@/api/create-book";
+import { toast } from "sonner";
 
 const bookSchema = z.object({
   title: z.string().min(1, { message: "Título é obrigatório" }),
   totalPages: z
-    .number()
+    .number({
+      invalid_type_error: "Total de páginas deve ser um número válido",
+    })
     .min(1, { message: "Total de páginas deve ser maior que 0" }),
   description: z.string(),
   coverImageURL: z.string().url(),
@@ -75,9 +80,21 @@ export function CreateBookForm({ book }: CreateBookFormProps) {
     }
   }, [book, reset]);
 
-  const onSubmit = (data: BookSchemaData) => {
-    console.log("Dados do livro enviados:", data);
-    reset(data);
+  const { mutateAsync: createBook } = useMutation({
+    mutationFn: CreateBook,
+  });
+
+  const onSubmit = async (data: BookSchemaData) => {
+    await createBook({
+      totalPages: data.totalPages,
+      title: data.title,
+      description: data.description,
+      coverImageURL: data.coverImageURL,
+      authors: data.authors.map((author) => author.name),
+      categories: data.categories.map((category) => category.name),
+    });
+
+    toast.success("Livro criado com sucesso!");
   };
 
   return (
@@ -90,9 +107,11 @@ export function CreateBookForm({ book }: CreateBookFormProps) {
         <Input
           {...register("title")}
           placeholder="Insira um novo título para o livro"
-          className="border p-2"
+          className={`border p-2 ${errors.title ? "border-red-500" : ""}`}
         />
-        <p>{errors.title?.message}</p>
+        {errors.title && (
+          <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1">
@@ -101,9 +120,18 @@ export function CreateBookForm({ book }: CreateBookFormProps) {
           {...register("totalPages", { valueAsNumber: true })}
           placeholder="Insira o total de páginas do livro"
           type="number"
-          className="border p-2"
+          onKeyDown={(e) => {
+            if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+              e.preventDefault();
+            }
+          }}
+          className={`border p-2 ${errors.totalPages ? "border-red-500" : ""}`}
         />
-        <p>{errors.totalPages?.message}</p>
+        {errors.totalPages && (
+          <p className="text-sm text-red-500 mt-1">
+            {errors.totalPages.message}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1 col-span-2">
@@ -111,8 +139,13 @@ export function CreateBookForm({ book }: CreateBookFormProps) {
         <Textarea
           {...register("description")}
           placeholder="Descrição do livro"
-          className="border p-2"
+          className={`border p-2 ${errors.description ? "border-red-500" : ""}`}
         />
+        {errors.description && (
+          <p className="text-sm text-red-500 mt-1">
+            {errors.description.message}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1 col-span-2">
@@ -120,31 +153,47 @@ export function CreateBookForm({ book }: CreateBookFormProps) {
         <Input
           {...register("coverImageURL")}
           placeholder="URL da imagem da capa"
-          className="border p-2"
+          className={`border p-2 ${
+            errors.coverImageURL ? "border-red-500" : ""
+          }`}
           disabled
         />
+        {errors.coverImageURL && (
+          <p className="text-sm text-red-500 mt-1">
+            {errors.coverImageURL.message}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1 col-span-2">
         <label>Autores</label>
         {authorsFields.map((field, index) => (
-          <div key={field.id} className="flex gap-2 mb-2">
-            <Input
-              {...register(`authors.${index}.name` as const)}
-              defaultValue={field.name}
-              placeholder="Nome do autor"
-              className="border p-2"
-            />
-            {authorsFields.length > 1 && (
-              <Button
-                className="font-semibold"
-                type="button"
-                variant="destructive"
-                size="icon"
-                onClick={() => removeAuthor(index)}
-              >
-                <Trash2 />
-              </Button>
+          <div key={field.id} className="mb-4">
+            <div className="flex gap-2">
+              <Input
+                {...register(`authors.${index}.name` as const)}
+                defaultValue={field.name}
+                placeholder="Nome do autor"
+                className={`border p-2 w-full ${
+                  errors.authors?.[index]?.name ? "border-red-500" : ""
+                }`}
+              />
+              {authorsFields.length > 1 && (
+                <Button
+                  className="font-semibold"
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => removeAuthor(index)}
+                >
+                  <Trash2 />
+                </Button>
+              )}
+            </div>
+            {errors.authors?.[index]?.name && (
+              <p className="text-sm text-red-500 mt-1">
+                {errors.authors[index].name?.message}
+              </p>
             )}
           </div>
         ))}
@@ -162,23 +211,32 @@ export function CreateBookForm({ book }: CreateBookFormProps) {
       <div className="flex flex-col gap-1 col-span-2">
         <label>Categorias</label>
         {categoriesFields.map((field, index) => (
-          <div key={field.id} className="flex gap-2 mb-2">
-            <Input
-              {...register(`categories.${index}.name` as const)}
-              defaultValue={field.name}
-              placeholder="Nome da categoria"
-              className="border p-2"
-            />
-            {categoriesFields.length > 1 && (
-              <Button
-                className="font-semibold"
-                type="button"
-                variant="destructive"
-                size="icon"
-                onClick={() => removeCategory(index)}
-              >
-                <Trash2 />
-              </Button>
+          <div key={field.id} className="mb-4">
+            <div className="flex gap-2">
+              <Input
+                {...register(`categories.${index}.name` as const)}
+                defaultValue={field.name}
+                placeholder="Nome da categoria"
+                className={`border p-2 w-full ${
+                  errors.categories?.[index]?.name ? "border-red-500" : ""
+                }`}
+              />
+              {categoriesFields.length > 1 && (
+                <Button
+                  className="font-semibold"
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => removeCategory(index)}
+                >
+                  <Trash2 />
+                </Button>
+              )}
+            </div>
+            {errors.categories?.[index]?.name && (
+              <p className="text-sm text-red-500 mt-1">
+                {errors.categories[index].name?.message}
+              </p>
             )}
           </div>
         ))}
@@ -189,7 +247,7 @@ export function CreateBookForm({ book }: CreateBookFormProps) {
           onClick={() => appendCategory({ name: "" })}
         >
           <PlusCircle size={22} />
-          Adicionar categoria
+          Adicionar Categoria
         </Button>
       </div>
 
