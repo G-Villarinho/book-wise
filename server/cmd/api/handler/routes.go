@@ -34,8 +34,8 @@ func setupAuthRoutes(e *echo.Echo, di *internal.Di) {
 	group := e.Group("/v1/auth")
 
 	group.POST("/sign-in", authHandler.SignIn)
-	group.POST("/sign-out", authHandler.SignOut, middleware.EnsureAuthenticated(di))
 	group.GET("/link", authHandler.VeryfyMagicLink)
+	group.POST("/sign-out", authHandler.SignOut, middleware.EnsureAuthenticated(di))
 }
 
 func setupBookRoutes(e *echo.Echo, di *internal.Di) {
@@ -44,8 +44,9 @@ func setupBookRoutes(e *echo.Echo, di *internal.Di) {
 		log.Fatal("error to create book handler: ", err)
 	}
 
-	group := e.Group("/v1/books")
+	group := e.Group("/v1/books", middleware.EnsureAuthenticated(di))
 
-	group.GET("/search", bookHandler.SearchBooks)
 	group.POST("", bookHandler.CreateBook)
+	group.GET("/external/search", bookHandler.SearchExternalBooks)
+	group.GET("/external/:externalId", bookHandler.GetExternalBookByID)
 }

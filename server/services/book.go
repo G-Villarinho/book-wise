@@ -11,8 +11,9 @@ import (
 )
 
 type BookService interface {
-	SearchBook(ctx context.Context, query string, page int) ([]models.BookSearchResponse, error)
 	CreateBook(ctx context.Context, payload models.CreateBookPayload) (*models.BookResponse, error)
+	SearchExternalBook(ctx context.Context, query string, page int) ([]models.BookSearchResponse, error)
+	GetExternalBookByID(ctx context.Context, externalID string) (*models.BookSearchResponse, error)
 }
 
 type bookService struct {
@@ -53,24 +54,6 @@ func NewBookService(di *internal.Di) (BookService, error) {
 	}, nil
 }
 
-func (b *bookService) SearchBook(ctx context.Context, query string, page int) ([]models.BookSearchResponse, error) {
-	volumes, err := b.googleBookClient.SearchBooks(query, page)
-	if err != nil {
-		return nil, fmt.Errorf("search book external api: %v", err)
-	}
-
-	if len(volumes) == 0 {
-		return nil, models.ErrSearchBooksEmpty
-	}
-
-	var bookSearchsResponse []models.BookSearchResponse
-	for _, volume := range volumes {
-		bookSearchsResponse = append(bookSearchsResponse, *volume.ToBookSearchResponse())
-	}
-
-	return bookSearchsResponse, nil
-}
-
 func (b *bookService) CreateBook(ctx context.Context, payload models.CreateBookPayload) (*models.BookResponse, error) {
 	authors, err := b.authorService.FindOrCreateAuthors(ctx, payload.Authors)
 	if err != nil {
@@ -98,4 +81,35 @@ func (b *bookService) CreateBook(ctx context.Context, payload models.CreateBookP
 		Authors:          payload.Authors,
 		Categories:       payload.Categories,
 	}, nil
+}
+
+func (b *bookService) SearchExternalBook(ctx context.Context, query string, page int) ([]models.BookSearchResponse, error) {
+	volumes, err := b.googleBookClient.SearchBooks(ctx, query, page)
+	if err != nil {
+		return nil, fmt.Errorf("search book external api: %v", err)
+	}
+
+	if len(volumes) == 0 {
+		return nil, models.ErrSearchExternalBooksEmpty
+	}
+
+	var bookSearchsResponse []models.BookSearchResponse
+	for _, volume := range volumes {
+		bookSearchsResponse = append(bookSearchsResponse, *volume.ToBookSearchResponse())
+	}
+
+	return bookSearchsResponse, nil
+}
+
+func (b *bookService) GetExternalBookByID(ctx context.Context, externalID string) (*models.BookSearchResponse, error) {
+	volume, err := b.googleBookClient.GetBookByID(ctx, externalID)
+	if err != nil {
+		return nil, fmt.Errorf("search book external api: %v", err)
+	}
+
+	if volume == nil {
+		return nil, models.ErrExternalBookNotFound
+	}
+
+	return volume.ToBookSearchResponse(), nil
 }

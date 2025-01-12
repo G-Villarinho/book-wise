@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	ErrSearchBooksEmpty = errors.New("no books found matching the search criteria")
+	ErrSearchExternalBooksEmpty = errors.New("no external books found matching the search criteria")
+	ErrExternalBookNotFound     = errors.New("no external book found from api")
 )
 
 type Book struct {

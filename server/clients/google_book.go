@@ -1,6 +1,7 @@
 package clients
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -58,7 +59,8 @@ func (v *Volume) ToBookSearchResponse() *models.BookSearchResponse {
 }
 
 type GoogleBookClient interface {
-	SearchBooks(query string, startIndex int) ([]Volume, error)
+	SearchBooks(ctx context.Context, query string, startIndex int) ([]Volume, error)
+	GetBookByID(ctx context.Context, ID string) (*Volume, error)
 }
 
 type googleBookClient struct {
@@ -71,7 +73,7 @@ func NewGoogleBookClient(di *internal.Di) (GoogleBookClient, error) {
 	}, nil
 }
 
-func (g *googleBookClient) SearchBooks(query string, startIndex int) ([]Volume, error) {
+func (g *googleBookClient) SearchBooks(ctx context.Context, query string, startIndex int) ([]Volume, error) {
 	escapedQuery := url.QueryEscape(query)
 
 	url := ""
@@ -99,4 +101,31 @@ func (g *googleBookClient) SearchBooks(query string, startIndex int) ([]Volume, 
 	}
 
 	return result.Items, nil
+}
+
+func (g *googleBookClient) GetBookByID(ctx context.Context, ID string) (*Volume, error) {
+	url := fmt.Sprintf("%s/volumes/%s", config.Env.GoogleBooksApiUrl, ID)
+
+	var httpClient http.Client
+
+	resp, err := httpClient.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("request google books api: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, nil
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("consult api, status: %v", resp.StatusCode)
+	}
+
+	var result Volume
+	if err := jsoniter.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("decoder google books api response: %v", err)
+	}
+
+	return &result, nil
 }

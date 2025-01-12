@@ -16,8 +16,9 @@ import (
 )
 
 type BookHandler interface {
-	SearchBooks(ctx echo.Context) error
 	CreateBook(ctx echo.Context) error
+	SearchExternalBooks(ctx echo.Context) error
+	GetExternalBookByID(ctx echo.Context) error
 }
 
 type bookHandler struct {
@@ -35,32 +36,6 @@ func NewBookHandler(di *internal.Di) (BookHandler, error) {
 		di:          di,
 		bookService: bookService,
 	}, nil
-}
-
-func (b *bookHandler) SearchBooks(ctx echo.Context) error {
-	log := slog.With(
-		slog.String("handler", "book"),
-		slog.String("func", "SearchBooks"),
-	)
-
-	page, err := strconv.Atoi(ctx.QueryParam("page"))
-	if err != nil {
-		log.Error(err.Error())
-		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_pagination", "Parametros de busca inválidos.")
-	}
-
-	response, err := b.bookService.SearchBook(ctx.Request().Context(), ctx.QueryParam("q"), page)
-	if err != nil {
-		log.Error(err.Error())
-
-		if errors.Is(err, models.ErrSearchBooksEmpty) {
-			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Nenhum livro foi encontrado para a sua procura.")
-		}
-
-		return responses.InternalServerAPIErrorResponse(ctx)
-	}
-
-	return ctx.JSON(http.StatusOK, response)
 }
 
 func (b *bookHandler) CreateBook(ctx echo.Context) error {
@@ -89,6 +64,52 @@ func (b *bookHandler) CreateBook(ctx echo.Context) error {
 	response, err := b.bookService.CreateBook(ctx.Request().Context(), payload)
 	if err != nil {
 		log.Error(err.Error())
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.JSON(http.StatusOK, response)
+}
+
+func (b *bookHandler) SearchExternalBooks(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "book"),
+		slog.String("func", "SearchExternalBooks"),
+	)
+
+	page, err := strconv.Atoi(ctx.QueryParam("page"))
+	if err != nil {
+		log.Error(err.Error())
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_pagination", "Parametros de busca inválidos.")
+	}
+
+	response, err := b.bookService.SearchExternalBook(ctx.Request().Context(), ctx.QueryParam("q"), page)
+	if err != nil {
+		log.Error(err.Error())
+
+		if errors.Is(err, models.ErrSearchExternalBooksEmpty) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Nenhum livro foi encontrado para a sua procura.")
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.JSON(http.StatusOK, response)
+}
+
+func (b *bookHandler) GetExternalBookByID(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "book"),
+		slog.String("func", "GetExternalBookByID"),
+	)
+
+	response, err := b.bookService.GetExternalBookByID(ctx.Request().Context(), ctx.Param("externalId"))
+	if err != nil {
+		log.Error(err.Error())
+
+		if errors.Is(err, models.ErrExternalBookNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Nenhum livro foi encontrado para a sua procura.")
+		}
 
 		return responses.InternalServerAPIErrorResponse(ctx)
 	}
