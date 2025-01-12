@@ -65,10 +65,10 @@ export function SearchInput() {
       <div className="relative top-2">
         <Input
           {...register("authorOrTitle")}
-          className="w-full md:w-[400px] h-11 rounded-lg bg-slate-100 focus-visible:ring-slate-200"
+          className="w-full md:w-[400px] h-11 rounded-lg bg-slate-100 focus-visible:ring-slate-200 dark:bg-zinc-800"
           placeholder="Buscar por autor ou título"
         />
-        <Button type="submit" className=" absolute top-1 left-80 font-bold">
+        <Button type="submit" className=" absolute top-1 left-80 font-bold ">
           Buscar
         </Button>
       </div>

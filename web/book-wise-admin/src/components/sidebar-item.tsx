@@ -33,10 +33,13 @@ export function SidebarItem({ icon: Icon, label, href }: SidebarItemProps) {
           "text-sky-700 bg-sky-200/70 hover:bg-sky-200/20 hover:text-sky-700"
       )}
     >
-      <div className="flex items-center gap-x-2 py-4">
+      <div className="flex items-center gap-x-2 py-4 font-semibold dark:text-white">
         <Icon
           size={22}
-          className={cn("text-slate-500", isActive && "text-sky-700")}
+          className={cn(
+            "text-slate-500 font-bold dark:text-white",
+            isActive && "text-sky-700"
+          )}
         />
         {label}
       </div>
