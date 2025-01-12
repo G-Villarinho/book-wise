@@ -38,7 +38,7 @@ export function AppLayout() {
       <div className="hidden md:flex h-full w-56 flex-col fixed inset-y-0 z-50">
         <Sidebar />
       </div>
-      <main className="md:pl-64 md:py-28">
+      <main className="md:pl-60 md:py-28">
         <Outlet />
       </main>
     </div>

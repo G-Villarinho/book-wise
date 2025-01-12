@@ -37,13 +37,13 @@ type CreateBookPayload struct {
 }
 
 type BookSearchResponse struct {
-	Key           string   `json:"key"`
-	TotalPages    uint     `json:"totalPages"`
-	Title         string   `json:"title"`
-	Description   string   `json:"description"`
-	CoverImageURL string   `json:"coverImageURL"`
-	Authors       []string `json:"authors"`
-	Categories    []string `json:"categories"`
+	ExternalBookID string   `json:"externalBookId"`
+	TotalPages     uint     `json:"totalPages"`
+	Title          string   `json:"title"`
+	Description    string   `json:"description"`
+	CoverImageURL  string   `json:"coverImageURL"`
+	Authors        []string `json:"authors"`
+	Categories     []string `json:"categories"`
 }
 
 type BookResponse struct {

@@ -1,18 +1,9 @@
+import { SearchBookResponse } from "@/@types/search-book-response";
 import { api } from "@/lib/axios";
 
 export interface SearchBookQuery {
   page?: number | null;
   authorOrTitle?: string | null;
-}
-
-interface SearchBookResponse {
-  key: string;
-  totalPages: number;
-  title: string;
-  description: string;
-  coverImageURL: string;
-  authors: string[];
-  categories: string[];
 }
 
 export async function searchExternalBooks({

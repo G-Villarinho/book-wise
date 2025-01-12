@@ -1,14 +1,24 @@
 import placeholder from "@/assets/book-placeholder.png";
+import { useNavigate } from "react-router-dom";
 
 interface BookCardProps {
+  externalBookId: string;
   coverImageUrl: string;
 }
 
-export function BookCard({ coverImageUrl }: BookCardProps) {
+export function BookCard({ externalBookId, coverImageUrl }: BookCardProps) {
+  const navigate = useNavigate();
   const image = coverImageUrl !== "" ? coverImageUrl : placeholder;
 
+  function handleClick() {
+    navigate(`/book/new/${externalBookId}`);
+  }
+
   return (
-    <div className="relative max-w-[220px] rounded-lg bg-white shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer group">
+    <a
+      onClick={handleClick}
+      className="relative max-w-[220px] rounded-lg bg-white shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer group"
+    >
       <div className="relative">
         <img
           src={image}
@@ -26,6 +36,6 @@ export function BookCard({ coverImageUrl }: BookCardProps) {
           Adicionar livro ao portal
         </span>
       </div>
-    </div>
+    </a>
   );
 }

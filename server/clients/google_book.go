@@ -48,13 +48,13 @@ func (v *Volume) ToBookSearchResponse() *models.BookSearchResponse {
 	}
 
 	return &models.BookSearchResponse{
-		Key:           v.ID,
-		TotalPages:    uint(info.PageCount),
-		Title:         info.Title,
-		Description:   info.Description,
-		CoverImageURL: info.ImageLinks.Thumbnail,
-		Authors:       info.Authors,
-		Categories:    info.Categories,
+		ExternalBookID: v.ID,
+		TotalPages:     uint(info.PageCount),
+		Title:          info.Title,
+		Description:    info.Description,
+		CoverImageURL:  info.ImageLinks.Thumbnail,
+		Authors:        info.Authors,
+		Categories:     info.Categories,
 	}
 }
 

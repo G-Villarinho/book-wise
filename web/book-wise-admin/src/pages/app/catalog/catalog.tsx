@@ -41,7 +41,7 @@ export function Catalog() {
   }
 
   return (
-    <div>
+    <>
       <Helmet title="Catálogo" />
       <Header
         title="Catálogo de Livros"
@@ -60,7 +60,11 @@ export function Catalog() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
             {books?.map((book) => (
-              <BookCard key={book.key} coverImageUrl={book.coverImageURL} />
+              <BookCard
+                key={book.externalBookId}
+                externalBookId={book.externalBookId}
+                coverImageUrl={book.coverImageURL}
+              />
             ))}
           </div>
         )}
@@ -84,6 +88,6 @@ export function Catalog() {
           <ChevronRight size={22} />
         </Button>
       </div>
-    </div>
+    </>
   );
 }
