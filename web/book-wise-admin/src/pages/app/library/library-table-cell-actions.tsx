@@ -1,3 +1,9 @@
+import { PaginationResponse } from "@/@types/pagination-response";
+import { deleteBook } from "@/api/delete-book";
+import { BookResponse } from "@/api/get-books";
+import { publishBook } from "@/api/publish-book";
+import { unpublishBook } from "@/api/unpublish-book";
+import { z } from "zod";
 import {
   AlertDialogHeader,
   AlertDialogFooter,
@@ -16,16 +22,110 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { Ellipsis, Trash, FilePen, Forward } from "lucide-react";
+import { Ellipsis, Trash, FilePen, Forward, RotateCcw } from "lucide-react";
+import { toast } from "sonner";
+import { useSearchParams } from "react-router-dom";
 
 interface LibraryTableCellActionsProps {
   bookId: string;
+  isPublished: boolean;
 }
 
 export function LibraryTableCellActions({
   bookId,
+  isPublished,
 }: LibraryTableCellActionsProps) {
+  const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+
+  const page =
+    z
+      .string()
+      .transform(Number)
+      .parse(searchParams.get("page") ?? "1") - 1;
+
+  function updateBookPublishStatsOnCache(
+    bookId: string,
+    publishedStatus: boolean
+  ) {
+    const libraryListingCache = queryClient.getQueriesData<
+      PaginationResponse<BookResponse>
+    >({
+      queryKey: ["library"],
+    });
+
+    libraryListingCache.forEach(([cacheKey, cached]) => {
+      if (!cached) {
+        return;
+      }
+
+      queryClient.setQueryData<PaginationResponse<BookResponse>>(cacheKey, {
+        ...cached,
+        data: cached.data.map((book) => {
+          if (book.id !== bookId) {
+            return book;
+          }
+
+          return {
+            ...book,
+            published: publishedStatus,
+          };
+        }),
+      });
+    });
+
+    if (publishedStatus) {
+      toast.success("Livro publicado com sucesso!");
+    } else {
+      toast.success("Livro despublicado com sucesso!");
+    }
+  }
+
+  const { mutateAsync: publishBookFn, isPending: isPendingPublishBook } =
+    useMutation({
+      mutationFn: publishBook,
+      onSuccess: async (_, { bookId }) => {
+        updateBookPublishStatsOnCache(bookId, true);
+      },
+    });
+
+  const { mutateAsync: unpublishBookFn, isPending: isPendingUnpublishBook } =
+    useMutation({
+      mutationFn: unpublishBook,
+      onSuccess: async (_, { bookId }) => {
+        updateBookPublishStatsOnCache(bookId, false);
+      },
+    });
+
+  const { mutateAsync: deleteBookFn } = useMutation({
+    mutationFn: deleteBook,
+  });
+  async function handlePublishToggle() {
+    if (isPublished) {
+      await unpublishBookFn({ bookId });
+    } else {
+      await publishBookFn({ bookId });
+    }
+  }
+
+  async function handleDeleteBook() {
+    try {
+      await deleteBookFn({ bookId });
+
+      queryClient.invalidateQueries({
+        queryKey: ["library"],
+        exact: false,
+        filters: { page },
+      });
+
+      toast.success("Livro deletado com sucesso da biblioteca");
+    } catch {
+      toast.error("Erro ao deletar o livro. Tente novamente.");
+    }
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -34,11 +134,26 @@ export function LibraryTableCellActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={handlePublishToggle}>
+          {isPendingPublishBook || isPendingUnpublishBook ? (
+            <span className="animate-spin">⏳</span>
+          ) : isPublished ? (
+            <>
+              <RotateCcw /> Despublicar
+            </>
+          ) : (
+            <>
+              <Forward /> Publicar
+            </>
+          )}
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <FilePen /> Edit
+        </DropdownMenuItem>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <DropdownMenuItem
               onSelect={(e) => {
-                // Evita que o Dropdown feche automaticamente
                 e.preventDefault();
               }}
             >
@@ -59,22 +174,13 @@ export function LibraryTableCellActions({
               </AlertDialogCancel>
               <AlertDialogAction
                 className="bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 font-bold"
-                onClick={() => {
-                  console.log(`Livro ${bookId} removido.`);
-                }}
+                onClick={handleDeleteBook}
               >
                 Deletar
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-
-        <DropdownMenuItem>
-          <FilePen /> Edit
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Forward /> Publish
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

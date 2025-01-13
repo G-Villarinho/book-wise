@@ -64,7 +64,10 @@ export function LibraryTableRow({ book }: LibraryTableRowProps) {
         {book.published ? "Publicado" : "Não publicado"}
       </TableCell>
       <TableCell className="font-mono text-xs font-medium">
-        <LibraryTableCellActions bookId={book.id} />
+        <LibraryTableCellActions
+          bookId={book.id}
+          isPublished={book.published}
+        />
       </TableCell>
     </TableRow>
   );
