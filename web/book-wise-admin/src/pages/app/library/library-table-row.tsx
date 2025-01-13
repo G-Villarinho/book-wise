@@ -1,16 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
-import { Ellipsis, FilePen, Forward, Search, Trash } from "lucide-react";
+import { Search } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useState } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { LibraryTableCellActions } from "./library-table-cell-actions";
 
 interface LibraryTableRowProps {
   book: {
@@ -60,24 +55,7 @@ export function LibraryTableRow({ book }: LibraryTableRowProps) {
         {book.categories.join(", ")}
       </TableCell>
       <TableCell className="font-mono text-xs font-medium">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="xxs">
-              <Ellipsis />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>
-              <Trash /> Remove
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <FilePen /> Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Forward /> Publish
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <LibraryTableCellActions bookId={book.id} />
       </TableCell>
     </TableRow>
   );

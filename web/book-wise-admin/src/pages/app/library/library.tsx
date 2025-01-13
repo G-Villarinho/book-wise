@@ -51,7 +51,7 @@ export function Library() {
 
   return (
     <>
-      <Helmet title="Catálogo" />
+      <Helmet title="Biblioteca" />
       <Header
         title="Biblioteca"
         subtitle="Explore e  gerencie todos os livros adicionados."
