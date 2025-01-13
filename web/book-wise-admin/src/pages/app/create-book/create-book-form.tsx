@@ -183,7 +183,7 @@ export function CreateBookForm({ book }: CreateBookFormProps) {
                   className="font-semibold"
                   type="button"
                   variant="destructive"
-                  size="icon"
+                  size="sm"
                   onClick={() => removeAuthor(index)}
                 >
                   <Trash2 />

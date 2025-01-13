@@ -1,4 +1,4 @@
-import { Compass, Layout } from "lucide-react";
+import { Compass, Layout, LibraryBig } from "lucide-react";
 import { SidebarItem } from "./sidebar-item";
 
 const guestRoutes = [
@@ -11,6 +11,11 @@ const guestRoutes = [
     icon: Compass,
     label: "Catálago",
     href: "/catalog",
+  },
+  {
+    icon: LibraryBig,
+    label: "Biblioteca",
+    href: "/library",
   },
 ];
 

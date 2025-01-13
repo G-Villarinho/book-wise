@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -56,14 +57,15 @@ type BookSearchResponse struct {
 }
 
 type BookResponse struct {
-	ID               string   `json:"id"`
-	TotalPages       uint     `json:"totalPages"`
-	TotalEvaluations uint     `json:"totalEvaluations"`
-	Title            string   `json:"title"`
-	Description      string   `json:"description"`
-	CoverImageURL    string   `json:"coverImageURL"`
-	Authors          []string `json:"authors"`
-	Categories       []string `json:"categories"`
+	ID               string    `json:"id"`
+	TotalPages       uint      `json:"totalPages"`
+	TotalEvaluations uint      `json:"totalEvaluations"`
+	Title            string    `json:"title"`
+	Description      string    `json:"description"`
+	CoverImageURL    string    `json:"coverImageURL"`
+	Authors          []string  `json:"authors"`
+	Categories       []string  `json:"categories"`
+	CreatedAt        time.Time `json:"createdAt"`
 }
 
 func (cbp *CreateBookPayload) ToBook(authors []Author, categories []Category) *Book {
@@ -102,5 +104,6 @@ func (b *Book) ToBookResponse() *BookResponse {
 		CoverImageURL:    b.CoverImageURL,
 		Authors:          authors,
 		Categories:       categories,
+		CreatedAt:        b.CreatedAt,
 	}
 }
