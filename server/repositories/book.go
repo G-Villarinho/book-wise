@@ -121,7 +121,7 @@ func (r *bookRepository) DeleteBookByID(ctx context.Context, ID uuid.UUID) error
 }
 
 func (r *bookRepository) UpdatePublicationStatus(ctx context.Context, ID uuid.UUID, publishedStatus bool) error {
-	if err := r.DB.WithContext(ctx).Where("Id = ?", ID.String()).UpdateColumn("Published", publishedStatus).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Model(&models.Book{}).Where("Id = ?", ID.String()).Update("Published", publishedStatus).Error; err != nil {
 		return err
 	}
 

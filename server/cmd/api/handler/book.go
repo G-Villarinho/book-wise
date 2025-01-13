@@ -232,7 +232,7 @@ func (b *bookHandler) UnpublishBook(ctx echo.Context) error {
 			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "not_found", "Não foi encontrado um livro para despublicar com esses parâmetros de busca.")
 		}
 
-		if errors.Is(err, models.ErrBookAlreadyPublished) {
+		if errors.Is(err, models.ErrBookAlreadyUnpublished) {
 			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "already_unpublished", "O livro já está despublicado. Não é necessário despublicar novamente.")
 		}
 
