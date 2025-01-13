@@ -13,7 +13,7 @@ import (
 
 type BookRepository interface {
 	CreateBook(ctx context.Context, book *models.Book) (*models.Book, error)
-	GetBookByID(ctx context.Context, ID uuid.UUID) (*models.Book, error)
+	GetBookByID(ctx context.Context, ID uuid.UUID, preload bool) (*models.Book, error)
 	GetPaginatedBooks(ctx context.Context, pagination *models.BookPagination) (*models.PaginatedResponse[models.Book], error)
 	DeleteBookByID(ctx context.Context, ID uuid.UUID) error
 	UpdatePublicationStatus(ctx context.Context, ID uuid.UUID, publishedStatus bool) error
@@ -64,9 +64,15 @@ func (r *bookRepository) CreateBook(ctx context.Context, book *models.Book) (*mo
 	return book, nil
 }
 
-func (r *bookRepository) GetBookByID(ctx context.Context, ID uuid.UUID) (*models.Book, error) {
+func (r *bookRepository) GetBookByID(ctx context.Context, ID uuid.UUID, preload bool) (*models.Book, error) {
 	var book *models.Book
-	if err := r.DB.WithContext(ctx).Where("Id = ?", ID).First(&book).Error; err != nil {
+	query := r.DB.WithContext(ctx).Where("Id = ?", ID)
+
+	if preload {
+		query = query.Preload("Authors").Preload("Categories")
+	}
+
+	if err := query.First(&book).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

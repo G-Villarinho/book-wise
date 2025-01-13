@@ -121,7 +121,7 @@ func (b *bookService) GetExternalBookByID(ctx context.Context, externalID string
 }
 
 func (b *bookService) GetBookByID(ctx context.Context, ID uuid.UUID) (*models.BookResponse, error) {
-	book, err := b.bookRepository.GetBookByID(ctx, ID)
+	book, err := b.bookRepository.GetBookByID(ctx, ID, true)
 	if err != nil {
 		return nil, fmt.Errorf("get book by id: %w", err)
 	}
@@ -147,7 +147,7 @@ func (b *bookService) GetPaginatedBooks(ctx context.Context, pagination *models.
 }
 
 func (b *bookService) DeleteBookByID(ctx context.Context, ID uuid.UUID) error {
-	book, err := b.bookRepository.GetBookByID(ctx, ID)
+	book, err := b.bookRepository.GetBookByID(ctx, ID, false)
 	if err != nil {
 		return fmt.Errorf("get book by id %q: %w", ID, err)
 	}
@@ -164,7 +164,7 @@ func (b *bookService) DeleteBookByID(ctx context.Context, ID uuid.UUID) error {
 }
 
 func (b *bookService) PublishBook(ctx context.Context, ID uuid.UUID) error {
-	book, err := b.bookRepository.GetBookByID(ctx, ID)
+	book, err := b.bookRepository.GetBookByID(ctx, ID, false)
 	if err != nil {
 		return fmt.Errorf("get book by id %q: %w", ID, err)
 	}
@@ -185,7 +185,7 @@ func (b *bookService) PublishBook(ctx context.Context, ID uuid.UUID) error {
 }
 
 func (b *bookService) UnpublishBook(ctx context.Context, ID uuid.UUID) error {
-	book, err := b.bookRepository.GetBookByID(ctx, ID)
+	book, err := b.bookRepository.GetBookByID(ctx, ID, false)
 	if err != nil {
 		return fmt.Errorf("get book by id %q: %w", ID, err)
 	}
