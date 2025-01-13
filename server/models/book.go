@@ -2,8 +2,10 @@ package models
 
 import (
 	"errors"
+	"strings"
 	"time"
 
+	"github.com/G-Villarinho/book-wise-api/utils"
 	"github.com/google/uuid"
 )
 
@@ -106,4 +108,31 @@ func (b *Book) ToBookResponse() *BookResponse {
 		Categories:       categories,
 		CreatedAt:        b.CreatedAt,
 	}
+}
+
+func NewBookPagination(page, limit, sort, title, bookID, authorID, categoryID string) (*BookPagination, error) {
+	pagination, err := NewPagination(page, limit, sort)
+	if err != nil {
+		return nil, err
+	}
+
+	bookPagination := &BookPagination{
+		Pagination: *pagination,
+		Title:      utils.GetQueryStringPointer(title),
+		BookID:     utils.GetQueryStringPointer(bookID),
+	}
+
+	if strings.ToLower(authorID) == "all" {
+		bookPagination.AuthorID = nil
+	} else {
+		bookPagination.AuthorID = utils.GetQueryStringPointer(authorID)
+	}
+
+	if strings.ToLower(categoryID) == "all" {
+		bookPagination.CategoryID = nil
+	} else {
+		bookPagination.CategoryID = utils.GetQueryStringPointer(categoryID)
+	}
+
+	return bookPagination, nil
 }

@@ -11,7 +11,6 @@ import (
 	"github.com/G-Villarinho/book-wise-api/internal"
 	"github.com/G-Villarinho/book-wise-api/models"
 	"github.com/G-Villarinho/book-wise-api/services"
-	"github.com/G-Villarinho/book-wise-api/utils"
 	"github.com/google/uuid"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/labstack/echo/v4"
@@ -149,18 +148,18 @@ func (b *bookHandler) GetBooks(ctx echo.Context) error {
 		slog.String("func", "GetBooks"),
 	)
 
-	pagination, err := models.NewPagination(ctx.QueryParam("page"), ctx.QueryParam("limit"), ctx.QueryParam("sort"))
+	bookPagination, err := models.NewBookPagination(
+		ctx.QueryParam("page"),
+		ctx.QueryParam("limit"),
+		ctx.QueryParam("sort"),
+		ctx.QueryParam("title"),
+		ctx.QueryParam("bookId"),
+		ctx.QueryParam("authorId"),
+		ctx.QueryParam("categoryId"),
+	)
 	if err != nil {
 		log.Error(err.Error())
 		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_pagination", "Parâmetros de buscas inválidos")
-	}
-
-	bookPagination := &models.BookPagination{
-		Pagination: *pagination,
-		Title:      utils.GetQueryStringPointer(ctx.QueryParam("title")),
-		BookID:     utils.GetQueryStringPointer(ctx.QueryParam("bookId")),
-		AuthorID:   utils.GetQueryStringPointer(ctx.QueryParam("authorId")),
-		CategoryID: utils.GetQueryStringPointer(ctx.QueryParam("categoryId")),
 	}
 
 	response, err := b.bookService.GetPaginatedBooks(ctx.Request().Context(), bookPagination)

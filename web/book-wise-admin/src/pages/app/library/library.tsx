@@ -14,6 +14,7 @@ import {
   Table,
 } from "@/components/ui/table";
 import { LibraryTableRow } from "./library-table-row";
+import { LibraryTableFilter } from "./library-table-filter";
 
 export function Library() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -29,7 +30,7 @@ export function Library() {
     .parse(searchParams.get("page") ?? "1");
 
   const { data: result } = useQuery({
-    queryKey: ["books", title, bookId, authorId, categoryId],
+    queryKey: ["library", title, bookId, authorId, categoryId, page],
     queryFn: () =>
       getBooks({
         page,
@@ -40,11 +41,9 @@ export function Library() {
       }),
   });
 
-  console.log(result);
-
   function handlePaginate(pageIndex: number) {
     setSearchParams((prev) => {
-      prev.set("page", (pageIndex + 1).toString());
+      prev.set("page", pageIndex.toString());
 
       return prev;
     });
@@ -60,6 +59,7 @@ export function Library() {
 
       <div className="flex flex-col gap-4 mt-6 mr-4">
         <div className="space-y-2.5">
+          <LibraryTableFilter />
           <div className="rounded-md border">
             <Table>
               <TableHeader>
@@ -68,7 +68,7 @@ export function Library() {
                   <TableHead className="w-[340px]">Identificador</TableHead>
                   <TableHead className="w-[180px]">Criado há</TableHead>
                   <TableHead className="w-[240px]">Título</TableHead>
-                  <TableHead>Autore(s)</TableHead>
+                  <TableHead>Autor(s)</TableHead>
                   <TableHead>Categoria(s)</TableHead>
                   <TableHead className="w-[64px]"></TableHead>
                 </TableRow>

@@ -27,13 +27,13 @@ export function Pagination({
 
       <div className="flex items-center space-x-6 lg:space-x-8">
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-          Página {page + 1} de {totalPages}
+          Página {page} de {totalPages}
         </div>
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
             className="hidden h-8 w-8 p-0 lg:flex"
-            onClick={() => onPageChange(0)}
+            onClick={() => onPageChange(1)}
             disabled={page === 1}
           >
             <span className="sr-only">Primeira página</span>
@@ -52,7 +52,7 @@ export function Pagination({
             variant="outline"
             className="h-8 w-8 p-0"
             onClick={() => onPageChange(page + 1)}
-            disabled={totalPages <= page + 1}
+            disabled={totalPages <= page}
           >
             <span className="sr-only">Próxima página</span>
             <ChevronRight className="h-4 w-4" />
@@ -60,7 +60,7 @@ export function Pagination({
           <Button
             variant="outline"
             className="hidden h-8 w-8 p-0 lg:flex"
-            onClick={() => onPageChange(totalPages - 1)}
+            onClick={() => onPageChange(totalPages)}
             disabled={totalPages <= page + 1}
           >
             <span className="sr-only">Última página</span>
