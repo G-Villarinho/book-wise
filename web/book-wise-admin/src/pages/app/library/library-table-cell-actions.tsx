@@ -26,7 +26,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Ellipsis, Trash, FilePen, Forward, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface LibraryTableCellActionsProps {
   bookId: string;
@@ -39,6 +39,7 @@ export function LibraryTableCellActions({
 }: LibraryTableCellActionsProps) {
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const page =
     z
@@ -102,12 +103,17 @@ export function LibraryTableCellActions({
   const { mutateAsync: deleteBookFn } = useMutation({
     mutationFn: deleteBook,
   });
+
   async function handlePublishToggle() {
     if (isPublished) {
       await unpublishBookFn({ bookId });
     } else {
       await publishBookFn({ bookId });
     }
+  }
+
+  function handleUpdateBook() {
+    navigate(`/book/update/${bookId}`);
   }
 
   async function handleDeleteBook() {
@@ -147,7 +153,7 @@ export function LibraryTableCellActions({
             </>
           )}
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleUpdateBook}>
           <FilePen /> Edit
         </DropdownMenuItem>
         <AlertDialog>
