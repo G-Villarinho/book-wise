@@ -70,6 +70,7 @@ export function Library() {
                   <TableHead className="w-[240px]">Título</TableHead>
                   <TableHead>Autor(s)</TableHead>
                   <TableHead>Categoria(s)</TableHead>
+                  <TableHead className="w-[130px]">Status</TableHead>
                   <TableHead className="w-[64px]"></TableHead>
                 </TableRow>
               </TableHeader>

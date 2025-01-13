@@ -15,6 +15,7 @@ interface LibraryTableRowProps {
     title: string;
     description: string;
     coverImageURL: string;
+    published: boolean;
     authors: string[];
     categories: string[];
     createdAt: string;
@@ -53,6 +54,9 @@ export function LibraryTableRow({ book }: LibraryTableRowProps) {
       </TableCell>
       <TableCell className="font-mono text-xs font-medium">
         {book.categories.join(", ")}
+      </TableCell>
+      <TableCell className="font-mono text-xs font-medium ">
+        {book.published ? "Publicado" : "Não publicado"}
       </TableCell>
       <TableCell className="font-mono text-xs font-medium">
         <LibraryTableCellActions bookId={book.id} />

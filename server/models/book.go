@@ -22,7 +22,7 @@ type Book struct {
 	TotalPages       uint   `gorm:"column:TotalPages;type:INT UNSIGNED;not null;default:0"`
 	TotalEvaluations uint   `gorm:"column:TotalEvaluations;type:INT UNSIGNED;not null;default:0"`
 	CoverImageURL    string `gorm:"column:Avatar;type:varchar(500);not null"`
-	Published        bool   `gorm:"column:Published;type:bit;not null;default:0"`
+	Published        bool   `gorm:"column:Published;type:TINYINT;not null;default:0"`
 
 	Categories []Category `gorm:"many2many:BookCategories;"`
 	Authors    []Author   `gorm:"many2many:BookAuthors;"`

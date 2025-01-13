@@ -15,6 +15,7 @@ export interface BookResponse {
   totalEvaluations: number;
   title: string;
   description: string;
+  published: boolean;
   coverImageURL: string;
   authors: string[];
   categories: string[];
