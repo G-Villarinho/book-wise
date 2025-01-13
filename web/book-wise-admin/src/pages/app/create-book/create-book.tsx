@@ -10,7 +10,7 @@ export function CreateBook() {
   const { externalBookId } = useParams();
 
   const { data: book, isLoading } = useQuery({
-    queryKey: ["book", externalBookId || ""],
+    queryKey: ["create-book", externalBookId || ""],
     queryFn: () => getExternalBookById(externalBookId!),
     enabled: !!externalBookId,
   });

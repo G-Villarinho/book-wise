@@ -25,7 +25,7 @@ export function Catalog() {
     isLoading,
     isFetching,
   } = useQuery({
-    queryKey: ["books", authorOrTitle || "", page],
+    queryKey: ["catalog", authorOrTitle || "", page],
     queryFn: () =>
       searchExternalBooks({
         authorOrTitle: authorOrTitle || "",
