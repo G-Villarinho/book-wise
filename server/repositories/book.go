@@ -16,6 +16,7 @@ type BookRepository interface {
 	GetBookByID(ctx context.Context, ID uuid.UUID) (*models.Book, error)
 	GetPaginatedBooks(ctx context.Context, pagination *models.BookPagination) (*models.PaginatedResponse[models.Book], error)
 	DeleteBookByID(ctx context.Context, ID uuid.UUID) error
+	UpdatePublicationStatus(ctx context.Context, ID uuid.UUID, publishedStatus bool) error
 }
 
 type bookRepository struct {
@@ -112,7 +113,15 @@ func (r *bookRepository) GetPaginatedBooks(ctx context.Context, pagination *mode
 }
 
 func (r *bookRepository) DeleteBookByID(ctx context.Context, ID uuid.UUID) error {
-	if err := r.DB.Where("Id = ?", ID.String()).Delete(&models.Book{}).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Where("Id = ?", ID.String()).Delete(&models.Book{}).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *bookRepository) UpdatePublicationStatus(ctx context.Context, ID uuid.UUID, publishedStatus bool) error {
+	if err := r.DB.WithContext(ctx).Where("Id = ?", ID.String()).UpdateColumn("Published", publishedStatus).Error; err != nil {
 		return err
 	}
 

@@ -21,9 +21,11 @@ type BookHandler interface {
 	CreateBook(ctx echo.Context) error
 	SearchExternalBooks(ctx echo.Context) error
 	GetExternalBookByID(ctx echo.Context) error
-	GetBookByID(ctx echo.Context) error
+	GetBook(ctx echo.Context) error
 	GetBooks(ctx echo.Context) error
 	DeleteBook(ctx echo.Context) error
+	PublishBook(ctx echo.Context) error
+	UnpublishBook(ctx echo.Context) error
 }
 
 type bookHandler struct {
@@ -122,7 +124,7 @@ func (b *bookHandler) GetExternalBookByID(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, response)
 }
 
-func (b *bookHandler) GetBookByID(ctx echo.Context) error {
+func (b *bookHandler) GetBook(ctx echo.Context) error {
 	ID, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		log.Error(err.Error())
@@ -190,4 +192,52 @@ func (b *bookHandler) DeleteBook(ctx echo.Context) error {
 	}
 
 	return ctx.NoContent(http.StatusNoContent)
+}
+
+func (b *bookHandler) PublishBook(ctx echo.Context) error {
+	ID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		log.Error(err.Error())
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_params", "Parametros de busca inválidos.")
+	}
+
+	if err := b.bookService.PublishBook(ctx.Request().Context(), ID); err != nil {
+		log.Error(err.Error())
+
+		if errors.Is(err, models.ErrBookNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "not_found", "Não foi encontrado um livro para publicar com esses parâmetros de busca.")
+		}
+
+		if errors.Is(err, models.ErrBookAlreadyPublished) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "already_published", "O livro já está publicado. Não é necessário publicar novamente.")
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.NoContent(http.StatusOK)
+}
+
+func (b *bookHandler) UnpublishBook(ctx echo.Context) error {
+	ID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		log.Error(err.Error())
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_params", "Parametros de busca inválidos.")
+	}
+
+	if err := b.bookService.UnpublishBook(ctx.Request().Context(), ID); err != nil {
+		log.Error(err.Error())
+
+		if errors.Is(err, models.ErrBookNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "not_found", "Não foi encontrado um livro para despublicar com esses parâmetros de busca.")
+		}
+
+		if errors.Is(err, models.ErrBookAlreadyPublished) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "already_unpublished", "O livro já está despublicado. Não é necessário despublicar novamente.")
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.NoContent(http.StatusOK)
 }

@@ -13,6 +13,8 @@ var (
 	ErrSearchExternalBooksEmpty = errors.New("no external books found matching the search criteria")
 	ErrExternalBookNotFound     = errors.New("no external book found from api")
 	ErrBookNotFound             = errors.New("no book found in database")
+	ErrBookAlreadyPublished     = errors.New("the book already has published status")
+	ErrBookAlreadyUnpublished   = errors.New("the book already has unpublished status")
 )
 
 type Book struct {

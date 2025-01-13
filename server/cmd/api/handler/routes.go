@@ -51,9 +51,11 @@ func setupBookRoutes(e *echo.Echo, di *internal.Di) {
 	group.POST("", bookHandler.CreateBook)
 	group.GET("/external/search", bookHandler.SearchExternalBooks)
 	group.GET("/external/:externalId", bookHandler.GetExternalBookByID)
-	group.GET("/:id", bookHandler.GetBookByID)
+	group.GET("/:id", bookHandler.GetBook)
 	group.GET("", bookHandler.GetBooks)
 	group.DELETE("/:id", bookHandler.DeleteBook)
+	group.PATCH("/:id/publish", bookHandler.PublishBook)
+	group.PATCH("/:id/unpublish", bookHandler.UnpublishBook)
 }
 
 func setupCategoryRoutes(e *echo.Echo, di *internal.Di) {

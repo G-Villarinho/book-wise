@@ -18,6 +18,8 @@ type BookService interface {
 	GetBookByID(ctx context.Context, ID uuid.UUID) (*models.BookResponse, error)
 	GetPaginatedBooks(ctx context.Context, pagination *models.BookPagination) (*models.PaginatedResponse[*models.BookResponse], error)
 	DeleteBookByID(ctx context.Context, ID uuid.UUID) error
+	PublishBook(ctx context.Context, ID uuid.UUID) error
+	UnpublishBook(ctx context.Context, ID uuid.UUID) error
 }
 
 type bookService struct {
@@ -156,6 +158,48 @@ func (b *bookService) DeleteBookByID(ctx context.Context, ID uuid.UUID) error {
 
 	if err := b.bookRepository.DeleteBookByID(ctx, ID); err != nil {
 		return fmt.Errorf("delete book by id %q: %w", ID, err)
+	}
+
+	return nil
+}
+
+func (b *bookService) PublishBook(ctx context.Context, ID uuid.UUID) error {
+	book, err := b.bookRepository.GetBookByID(ctx, ID)
+	if err != nil {
+		return fmt.Errorf("get book by id %q: %w", ID, err)
+	}
+
+	if book == nil {
+		return models.ErrBookNotFound
+	}
+
+	if book.Published {
+		return models.ErrBookAlreadyPublished
+	}
+
+	if err := b.bookRepository.UpdatePublicationStatus(ctx, ID, true); err != nil {
+		return fmt.Errorf("update publication status book %q: %w", ID, err)
+	}
+
+	return nil
+}
+
+func (b *bookService) UnpublishBook(ctx context.Context, ID uuid.UUID) error {
+	book, err := b.bookRepository.GetBookByID(ctx, ID)
+	if err != nil {
+		return fmt.Errorf("get book by id %q: %w", ID, err)
+	}
+
+	if book == nil {
+		return models.ErrBookNotFound
+	}
+
+	if !book.Published {
+		return models.ErrBookAlreadyUnpublished
+	}
+
+	if err := b.bookRepository.UpdatePublicationStatus(ctx, ID, false); err != nil {
+		return fmt.Errorf("update publication status book %q: %w", ID, err)
 	}
 
 	return nil
