@@ -1,3 +1,5 @@
+import { GetAuthors } from "@/api/get-authors";
+import { GetCategories } from "@/api/get-categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -7,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { useSearchParams } from "react-router-dom";
@@ -95,6 +98,16 @@ export function LibraryTableFilter() {
     });
   }
 
+  const { data: authors } = useQuery({
+    queryKey: ["authors"],
+    queryFn: GetAuthors,
+  });
+
+  const { data: categories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: GetCategories,
+  });
+
   return (
     <form
       onSubmit={handleSubmit(handleFilter)}
@@ -129,7 +142,11 @@ export function LibraryTableFilter() {
               <SelectItem value="all">
                 <span className="text-sm">Todos os autores</span>
               </SelectItem>
-              {/* Adicione outras opções de autores aqui */}
+              {authors?.map((author) => (
+                <SelectItem key={author.id} value={author.id}>
+                  <span className="text-sm">{author.fullName}</span>
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         )}
@@ -152,7 +169,11 @@ export function LibraryTableFilter() {
               <SelectItem value="all">
                 <span className="text-sm">Todos as categorias</span>
               </SelectItem>
-              {/* Adicione outras opções de categorias aqui */}
+              {categories?.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  <span className="text-sm">{category.name}</span>
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         )}
