@@ -56,6 +56,11 @@ export function LibraryTableRow({ book }: LibraryTableRowProps) {
         {book.categories.join(", ")}
       </TableCell>
       <TableCell className="font-mono text-xs font-medium ">
+        <span
+          className={`inline-block w-2.5 h-2.5 rounded-full mr-2 ${
+            book.published ? "bg-green-500" : "bg-red-500"
+          }`}
+        />
         {book.published ? "Publicado" : "Não publicado"}
       </TableCell>
       <TableCell className="font-mono text-xs font-medium">
