@@ -25,13 +25,22 @@ const bookSchema = z.object({
       name: z.string().min(1, { message: "Nome do autor é obrigatório" }),
     })
   ),
-  categories: z.array(
-    z.object({
-      name: z.string().min(1, { message: "Categoria é obrigatório" }),
-    })
-  ),
+  categories: z
+    .array(
+      z.object({
+        name: z.string().min(1, { message: "Categoria é obrigatório" }),
+      })
+    )
+    .refine(
+      (categories) => {
+        const uniqueCategories = new Set(
+          categories.map((category) => category.name)
+        );
+        return uniqueCategories.size === categories.length;
+      },
+      { message: "Existem categorias duplicadas" }
+    ),
 });
-
 export type BookSchemaData = z.infer<typeof bookSchema>;
 
 interface UpdateBookFormProps {
@@ -100,7 +109,7 @@ export function UpdateBookForm({ book }: UpdateBookFormProps) {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="mt-8 grid grid-cols-2 gap-4 px-12"
+      className="mt-8 grid grid-cols-2 gap-4 px-12 mr-4"
     >
       <div className="flex flex-col gap-1">
         <label>Título</label>

@@ -10,6 +10,7 @@ import { SearchBookResponse } from "@/@types/search-book-response";
 import { useMutation } from "@tanstack/react-query";
 import { CreateBook } from "@/api/create-book";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const bookSchema = z.object({
   title: z.string().min(1, { message: "Título é obrigatório" }),
@@ -39,6 +40,8 @@ interface CreateBookFormProps {
 }
 
 export function CreateBookForm({ book }: CreateBookFormProps) {
+  const navigate = useNavigate();
+
   const {
     handleSubmit,
     register,
@@ -85,6 +88,16 @@ export function CreateBookForm({ book }: CreateBookFormProps) {
   });
 
   const onSubmit = async (data: BookSchemaData) => {
+    const uniqueCategories = new Set(
+      data.categories.map((category) => category.name)
+    );
+    if (uniqueCategories.size !== data.categories.length) {
+      toast.error(
+        "Existem categorias duplicadas. Por favor, remova os duplicados."
+      );
+      return;
+    }
+
     await createBook({
       totalPages: data.totalPages,
       title: data.title,
@@ -95,6 +108,7 @@ export function CreateBookForm({ book }: CreateBookFormProps) {
     });
 
     toast.success("Livro criado com sucesso!");
+    navigate("/catalog");
   };
 
   return (
