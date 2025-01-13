@@ -22,6 +22,7 @@ type Book struct {
 	TotalPages       uint   `gorm:"column:TotalPages;type:INT UNSIGNED;not null;default:0"`
 	TotalEvaluations uint   `gorm:"column:TotalEvaluations;type:INT UNSIGNED;not null;default:0"`
 	CoverImageURL    string `gorm:"column:Avatar;type:varchar(500);not null"`
+	Published        bool   `gorm:"column:Published;type:bit;not null;default:0"`
 
 	Categories []Category `gorm:"many2many:BookCategories;"`
 	Authors    []Author   `gorm:"many2many:BookAuthors;"`
@@ -65,6 +66,7 @@ type BookResponse struct {
 	Title            string    `json:"title"`
 	Description      string    `json:"description"`
 	CoverImageURL    string    `json:"coverImageURL"`
+	Published        bool      `json:"published"`
 	Authors          []string  `json:"authors"`
 	Categories       []string  `json:"categories"`
 	CreatedAt        time.Time `json:"createdAt"`
@@ -104,9 +106,10 @@ func (b *Book) ToBookResponse() *BookResponse {
 		Title:            b.Title,
 		Description:      b.Description,
 		CoverImageURL:    b.CoverImageURL,
+		Published:        b.Published,
+		CreatedAt:        b.CreatedAt,
 		Authors:          authors,
 		Categories:       categories,
-		CreatedAt:        b.CreatedAt,
 	}
 }
 
