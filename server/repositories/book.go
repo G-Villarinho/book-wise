@@ -15,6 +15,7 @@ type BookRepository interface {
 	CreateBook(ctx context.Context, book *models.Book) (*models.Book, error)
 	GetBookByID(ctx context.Context, ID uuid.UUID) (*models.Book, error)
 	GetPaginatedBooks(ctx context.Context, pagination *models.BookPagination) (*models.PaginatedResponse[models.Book], error)
+	DeleteBookByID(ctx context.Context, ID uuid.UUID) error
 }
 
 type bookRepository struct {
@@ -64,7 +65,7 @@ func (r *bookRepository) CreateBook(ctx context.Context, book *models.Book) (*mo
 
 func (r *bookRepository) GetBookByID(ctx context.Context, ID uuid.UUID) (*models.Book, error) {
 	var book *models.Book
-	if err := r.DB.WithContext(ctx).Where("id = ?", ID).First(&book).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Where("Id = ?", ID).First(&book).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -108,4 +109,12 @@ func (r *bookRepository) GetPaginatedBooks(ctx context.Context, pagination *mode
 
 	return orders, nil
 
+}
+
+func (r *bookRepository) DeleteBookByID(ctx context.Context, ID uuid.UUID) error {
+	if err := r.DB.Where("Id = ?", ID.String()).Delete(&models.Book{}).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

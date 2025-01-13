@@ -53,6 +53,7 @@ func setupBookRoutes(e *echo.Echo, di *internal.Di) {
 	group.GET("/external/:externalId", bookHandler.GetExternalBookByID)
 	group.GET("/:id", bookHandler.GetBookByID)
 	group.GET("", bookHandler.GetBooks)
+	group.DELETE("/:id", bookHandler.DeleteBook)
 }
 
 func setupCategoryRoutes(e *echo.Echo, di *internal.Di) {

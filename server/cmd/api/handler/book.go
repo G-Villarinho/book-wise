@@ -23,6 +23,7 @@ type BookHandler interface {
 	GetExternalBookByID(ctx echo.Context) error
 	GetBookByID(ctx echo.Context) error
 	GetBooks(ctx echo.Context) error
+	DeleteBook(ctx echo.Context) error
 }
 
 type bookHandler struct {
@@ -169,4 +170,24 @@ func (b *bookHandler) GetBooks(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, response)
+}
+
+func (b *bookHandler) DeleteBook(ctx echo.Context) error {
+	ID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		log.Warn(err.Error())
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_params", "Parametros de busca inválidos.")
+	}
+
+	if err := b.bookService.DeleteBookByID(ctx.Request().Context(), ID); err != nil {
+		log.Error(err.Error())
+
+		if errors.Is(err, models.ErrBookNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "not_found", "Não foi encontrado um livro para remover com esses parâmetros de busca.")
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.NoContent(http.StatusNoContent)
 }
