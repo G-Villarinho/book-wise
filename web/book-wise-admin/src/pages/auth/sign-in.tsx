@@ -57,14 +57,14 @@ export function SignIn() {
           <div className="grid md:grid-cols-2 items-center gap-10 max-w-6xl max-md:max-w-md w-full">
             <div>
               <BookText size={50} className="mb-2" />
-              <h2 className="lg:text-5xl text-3xl font-extrabold lg:leading-[55px] text-gray-800">
+              <h2 className="lg:text-5xl text-3xl font-extrabold lg:leading-[55px] text-gray-800 dark:text-white">
                 Painel administrativo do Book Wise
               </h2>
-              <p className="text-sm mt-6 text-gray-800">
+              <p className="text-sm mt-6 text-gray-800 dark:text-gray-400">
                 Faça login para gerenciar o sistema, acompanhar estatísticas e
                 acessar as ferramentas avançadas da plataforma.
               </p>
-              <p className="text-sm mt-12 text-gray-800">
+              <p className="text-sm mt-12 text-gray-800 dark:text-gray-400">
                 Não tem uma conta de administrador?{" "}
                 <a
                   href="#"
@@ -79,8 +79,8 @@ export function SignIn() {
               className="max-w-md md:ml-auto w-full"
               onSubmit={handleSubmit(handleAuthenticate)}
             >
-              <h3 className="text-gray-800 text-3xl font-extrabold mb-8">
-                Entrar
+              <h3 className="text-gray-800 dark:text-white text-3xl font-extrabold mb-8">
+                👋 Bem-vindo de volta!
               </h3>
 
               <div className="space-y-4">
