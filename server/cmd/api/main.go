@@ -83,7 +83,9 @@ func main() {
 	internal.Provide(di, clients.NewGoogleBookClient)
 
 	internal.Provide(di, handler.NewAuthHandler)
+	internal.Provide(di, handler.NewAuthorHandler)
 	internal.Provide(di, handler.NewBookHandler)
+	internal.Provide(di, handler.NewCategoryHandler)
 	internal.Provide(di, handler.NewUserHandler)
 
 	internal.Provide(di, email.NewEmailService)

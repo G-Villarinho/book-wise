@@ -13,6 +13,7 @@ import (
 
 type AuthorService interface {
 	FindOrCreateAuthors(ctx context.Context, fullNames []string) ([]models.Author, error)
+	GetAllAuthors(ctx context.Context) ([]models.AuthorResponse, error)
 }
 
 type authorService struct {
@@ -75,4 +76,22 @@ func (a *authorService) FindOrCreateAuthors(ctx context.Context, fullNames []str
 	}
 
 	return append(existingAuthors, newAuthors...), nil
+}
+
+func (a *authorService) GetAllAuthors(ctx context.Context) ([]models.AuthorResponse, error) {
+	authors, err := a.authorRepository.GetAllAuthors(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get all authors: %w", err)
+	}
+
+	if authors == nil {
+		return nil, models.ErrAuthorsNotFound
+	}
+
+	var authorsResponse []models.AuthorResponse
+	for _, author := range authors {
+		authorsResponse = append(authorsResponse, *author.ToAuthorResponse())
+	}
+
+	return authorsResponse, nil
 }

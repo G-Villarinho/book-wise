@@ -12,6 +12,7 @@ import (
 type CategoryRepository interface {
 	CreateBatch(ctx context.Context, categories []models.Category) error
 	GetCategoriesByNormalizeNames(ctx context.Context, normalizedNames []string) ([]models.Category, error)
+	GetAllCategories(ctx context.Context) ([]models.Category, error)
 }
 
 type categoryRepository struct {
@@ -32,7 +33,7 @@ func NewCategoryRepository(di *internal.Di) (CategoryRepository, error) {
 }
 
 func (c *categoryRepository) CreateBatch(ctx context.Context, categories []models.Category) error {
-	if err := c.DB.Create(&categories).Error; err != nil {
+	if err := c.DB.WithContext(ctx).Create(&categories).Error; err != nil {
 		return err
 	}
 
@@ -42,7 +43,7 @@ func (c *categoryRepository) CreateBatch(ctx context.Context, categories []model
 func (c *categoryRepository) GetCategoriesByNormalizeNames(ctx context.Context, normalizedNames []string) ([]models.Category, error) {
 	var categories []models.Category
 
-	if err := c.DB.Where("NormalizedName IN ?", normalizedNames).Find(&categories).Error; err != nil {
+	if err := c.DB.WithContext(ctx).Where("NormalizedName IN ?", normalizedNames).Find(&categories).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -52,4 +53,18 @@ func (c *categoryRepository) GetCategoriesByNormalizeNames(ctx context.Context, 
 
 	return categories, nil
 
+}
+
+func (c *categoryRepository) GetAllCategories(ctx context.Context) ([]models.Category, error) {
+	var categories []models.Category
+
+	if err := c.DB.WithContext(ctx).Find(&categories).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return categories, nil
 }

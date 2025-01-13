@@ -12,6 +12,7 @@ import (
 type AuthorRepository interface {
 	CreateBatch(ctx context.Context, authors []models.Author) error
 	GetAuthorsByNormalizeFullNames(ctx context.Context, normalizeFullNames []string) ([]models.Author, error)
+	GetAllAuthors(ctx context.Context) ([]models.Author, error)
 }
 
 type authorRepository struct {
@@ -32,7 +33,7 @@ func NewAuthorRepository(di *internal.Di) (AuthorRepository, error) {
 }
 
 func (a *authorRepository) CreateBatch(ctx context.Context, authors []models.Author) error {
-	if err := a.DB.Create(&authors).Error; err != nil {
+	if err := a.DB.WithContext(ctx).Create(&authors).Error; err != nil {
 		return err
 	}
 
@@ -42,7 +43,21 @@ func (a *authorRepository) CreateBatch(ctx context.Context, authors []models.Aut
 func (a *authorRepository) GetAuthorsByNormalizeFullNames(ctx context.Context, normalizeFullNames []string) ([]models.Author, error) {
 	var authors []models.Author
 
-	if err := a.DB.Where("NormalizedFullName IN ?", normalizeFullNames).Find(&authors).Error; err != nil {
+	if err := a.DB.WithContext(ctx).Where("NormalizedFullName IN ?", normalizeFullNames).Find(&authors).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return authors, nil
+}
+
+func (a *authorRepository) GetAllAuthors(ctx context.Context) ([]models.Author, error) {
+	var authors []models.Author
+
+	if err := a.DB.WithContext(ctx).Find(&authors).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

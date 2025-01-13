@@ -16,3 +16,15 @@ type Category struct {
 func (c *Category) TableName() string {
 	return "Categories"
 }
+
+type CategoryResponse struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+func (c *Category) ToCategoryResponse() *CategoryResponse {
+	return &CategoryResponse{
+		ID:   c.BaseModel.ID.String(),
+		Name: c.Name,
+	}
+}

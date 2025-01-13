@@ -9,9 +9,11 @@ import (
 )
 
 func SetupRoutes(e *echo.Echo, di *internal.Di) {
-	setupUserRoutes(e, di)
 	setupAuthRoutes(e, di)
+	setupAuthorHandler(e, di)
 	setupBookRoutes(e, di)
+	setupCategoryRoutes(e, di)
+	setupUserRoutes(e, di)
 }
 
 func setupUserRoutes(e *echo.Echo, di *internal.Di) {
@@ -51,4 +53,26 @@ func setupBookRoutes(e *echo.Echo, di *internal.Di) {
 	group.GET("/external/:externalId", bookHandler.GetExternalBookByID)
 	group.GET("/:id", bookHandler.GetBookByID)
 	group.GET("", bookHandler.GetBooks)
+}
+
+func setupCategoryRoutes(e *echo.Echo, di *internal.Di) {
+	categoryHandler, err := internal.Invoke[CategoryHandler](di)
+	if err != nil {
+		log.Fatal("error to create category handler: ", err)
+	}
+
+	group := e.Group("/v1/categories", middleware.EnsureAuthenticated(di))
+
+	group.GET("", categoryHandler.GetCategories)
+}
+
+func setupAuthorHandler(e *echo.Echo, di *internal.Di) {
+	authorHandler, err := internal.Invoke[AuthorHandler](di)
+	if err != nil {
+		log.Fatal("error to create book handler: ", err)
+	}
+
+	group := e.Group("/v1/authors", middleware.EnsureAuthenticated(di))
+
+	group.GET("", authorHandler.GetAuthors)
 }
