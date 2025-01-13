@@ -49,4 +49,6 @@ func setupBookRoutes(e *echo.Echo, di *internal.Di) {
 	group.POST("", bookHandler.CreateBook)
 	group.GET("/external/search", bookHandler.SearchExternalBooks)
 	group.GET("/external/:externalId", bookHandler.GetExternalBookByID)
+	group.GET("/:id", bookHandler.GetBookByID)
+	group.GET("", bookHandler.GetBooks)
 }

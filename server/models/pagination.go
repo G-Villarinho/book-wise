@@ -24,7 +24,7 @@ func NewPagination(pageStr, limitStr, sort string) (*Pagination, error) {
 
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil || limit < 1 {
-		return nil, ErrInvalidLimitParameter
+		limit = 10
 	}
 
 	if sort == "" {

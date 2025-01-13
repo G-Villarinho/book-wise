@@ -8,12 +8,15 @@ import (
 	"github.com/G-Villarinho/book-wise-api/internal"
 	"github.com/G-Villarinho/book-wise-api/models"
 	"github.com/G-Villarinho/book-wise-api/repositories"
+	"github.com/google/uuid"
 )
 
 type BookService interface {
 	CreateBook(ctx context.Context, payload models.CreateBookPayload) (*models.BookResponse, error)
 	SearchExternalBook(ctx context.Context, query string, page int) ([]models.BookSearchResponse, error)
 	GetExternalBookByID(ctx context.Context, externalID string) (*models.BookSearchResponse, error)
+	GetBookByID(ctx context.Context, ID uuid.UUID) (*models.BookResponse, error)
+	GetPaginatedBooks(ctx context.Context, pagination *models.BookPagination) (*models.PaginatedResponse[*models.BookResponse], error)
 }
 
 type bookService struct {
@@ -112,4 +115,30 @@ func (b *bookService) GetExternalBookByID(ctx context.Context, externalID string
 	}
 
 	return volume.ToBookSearchResponse(), nil
+}
+
+func (b *bookService) GetBookByID(ctx context.Context, ID uuid.UUID) (*models.BookResponse, error) {
+	book, err := b.bookRepository.GetBookByID(ctx, ID)
+	if err != nil {
+		return nil, fmt.Errorf("get book by id: %w", err)
+	}
+
+	if book == nil {
+		return nil, models.ErrBookNotFound
+	}
+
+	return book.ToBookResponse(), nil
+}
+
+func (b *bookService) GetPaginatedBooks(ctx context.Context, pagination *models.BookPagination) (*models.PaginatedResponse[*models.BookResponse], error) {
+	paginatedBooks, err := b.bookRepository.GetPaginatedBooks(ctx, pagination)
+	if err != nil {
+		return nil, fmt.Errorf("get paginated books: %w", err)
+	}
+
+	paginatedBooksResponse := models.MapPaginatedResult(paginatedBooks, func(book models.Book) *models.BookResponse {
+		return book.ToBookResponse()
+	})
+
+	return paginatedBooksResponse, nil
 }

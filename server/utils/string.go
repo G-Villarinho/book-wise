@@ -47,3 +47,10 @@ func NormalizeString(str string) string {
 	}
 	return string(result)
 }
+
+func GetQueryStringPointer(value string) *string {
+	if value == "" {
+		return nil
+	}
+	return &value
+}

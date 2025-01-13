@@ -9,6 +9,7 @@ import (
 var (
 	ErrSearchExternalBooksEmpty = errors.New("no external books found matching the search criteria")
 	ErrExternalBookNotFound     = errors.New("no external book found from api")
+	ErrBookNotFound             = errors.New("no book found in database")
 )
 
 type Book struct {
@@ -25,6 +26,14 @@ type Book struct {
 
 func (b *Book) TableName() string {
 	return "Books"
+}
+
+type BookPagination struct {
+	Pagination
+	Title      *string `json:"title"`
+	BookID     *string `json:"bookId"`
+	AuthorID   *string `json:"authorId"`
+	CategoryID *string `json:"category"`
 }
 
 type CreateBookPayload struct {
@@ -47,6 +56,7 @@ type BookSearchResponse struct {
 }
 
 type BookResponse struct {
+	ID               string   `json:"id"`
 	TotalPages       uint     `json:"totalPages"`
 	TotalEvaluations uint     `json:"totalEvaluations"`
 	Title            string   `json:"title"`
@@ -56,18 +66,41 @@ type BookResponse struct {
 	Categories       []string `json:"categories"`
 }
 
-func (payload *CreateBookPayload) ToBook(authors []Author, categories []Category) *Book {
+func (cbp *CreateBookPayload) ToBook(authors []Author, categories []Category) *Book {
 	ID, _ := uuid.NewV7()
 
 	return &Book{
 		BaseModel: BaseModel{
 			ID: ID,
 		},
-		Title:         payload.Title,
-		Description:   payload.Description,
-		TotalPages:    payload.TotalPages,
-		CoverImageURL: payload.CoverImageURL,
+		Title:         cbp.Title,
+		Description:   cbp.Description,
+		TotalPages:    cbp.TotalPages,
+		CoverImageURL: cbp.CoverImageURL,
 		Authors:       authors,
 		Categories:    categories,
+	}
+}
+
+func (b *Book) ToBookResponse() *BookResponse {
+	var authors []string
+	for _, author := range b.Authors {
+		authors = append(authors, author.FullName)
+	}
+
+	var categories []string
+	for _, category := range b.Categories {
+		categories = append(categories, category.Name)
+	}
+
+	return &BookResponse{
+		ID:               b.BaseModel.ID.String(),
+		TotalPages:       b.TotalPages,
+		TotalEvaluations: b.TotalEvaluations,
+		Title:            b.Title,
+		Description:      b.Description,
+		CoverImageURL:    b.CoverImageURL,
+		Authors:          authors,
+		Categories:       categories,
 	}
 }

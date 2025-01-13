@@ -2,14 +2,19 @@ package repositories
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/G-Villarinho/book-wise-api/internal"
 	"github.com/G-Villarinho/book-wise-api/models"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type BookRepository interface {
 	CreateBook(ctx context.Context, book *models.Book) (*models.Book, error)
+	GetBookByID(ctx context.Context, ID uuid.UUID) (*models.Book, error)
+	GetPaginatedBooks(ctx context.Context, pagination *models.BookPagination) (*models.PaginatedResponse[models.Book], error)
 }
 
 type bookRepository struct {
@@ -55,4 +60,52 @@ func (r *bookRepository) CreateBook(ctx context.Context, book *models.Book) (*mo
 	}
 
 	return book, nil
+}
+
+func (r *bookRepository) GetBookByID(ctx context.Context, ID uuid.UUID) (*models.Book, error) {
+	var book *models.Book
+	if err := r.DB.WithContext(ctx).Where("id = ?", ID).First(&book).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return book, nil
+}
+
+func (r *bookRepository) GetPaginatedBooks(ctx context.Context, pagination *models.BookPagination) (*models.PaginatedResponse[models.Book], error) {
+	query := r.DB.WithContext(ctx).
+		Model(&models.Book{}).
+		Preload("Categories").
+		Preload("Authors")
+
+	if pagination.BookID != nil {
+		query = query.Where("Books.Id LIKE ?", fmt.Sprintf("%%%s%%", *pagination.BookID))
+	}
+
+	if pagination.Title != nil {
+		query = query.Where("Books.Title LIKE ?", fmt.Sprintf("%%%s%%", *pagination.Title))
+	}
+
+	if pagination.AuthorID != nil {
+		query = query.Joins("JOIN BookAuthors ON BookAuthors.BookID = Books.Id").
+			Where("BookAuthors.AuthorID = ?", *pagination.AuthorID)
+	}
+
+	if pagination.CategoryID != nil {
+		query = query.Joins("JOIN BookCategories ON BookCategories.BookID = Books.Id").
+			Where("BookCategories.CategoryID = ?", *pagination.CategoryID)
+	}
+
+	orders, err := paginate[models.Book](query, &pagination.Pagination, &models.Book{})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return orders, nil
+
 }

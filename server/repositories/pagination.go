@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func Paginate[T any](db *gorm.DB, pagination *models.Pagination, model any) (*models.PaginatedResponse[T], error) {
+func paginate[T any](db *gorm.DB, pagination *models.Pagination, model any) (*models.PaginatedResponse[T], error) {
 	var result models.PaginatedResponse[T]
 	var total int64
 
