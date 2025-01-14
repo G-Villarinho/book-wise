@@ -81,6 +81,7 @@ func main() {
 
 	internal.Provide(di, clients.NewMailtrapClient)
 	internal.Provide(di, clients.NewGoogleBookClient)
+	internal.Provide(di, clients.NewCloudFlareImageClient)
 
 	internal.Provide(di, handler.NewAuthHandler)
 	internal.Provide(di, handler.NewAuthorHandler)
@@ -96,6 +97,7 @@ func main() {
 	internal.Provide(di, services.NewAuthorService)
 	internal.Provide(di, services.NewBookService)
 	internal.Provide(di, services.NewCategoryService)
+	internal.Provide(di, services.NewImageService)
 	internal.Provide(di, services.NewQueueService)
 	internal.Provide(di, services.NewSessionService)
 	internal.Provide(di, services.NewTokenService)

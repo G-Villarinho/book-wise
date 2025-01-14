@@ -78,4 +78,5 @@ func setupAuthorHandler(e *echo.Echo, di *internal.Di) {
 	group := e.Group("/v1/authors", middleware.EnsureAuthenticated(di))
 
 	group.GET("", authorHandler.GetAuthors)
+	group.POST("", authorHandler.CreateAuthor)
 }

@@ -2,6 +2,7 @@ DOCKER_COMPOSE_FILE = docker-compose.yml
 APP_NAME = parallelizing-app
 MAIN_FILE = cmd/api/main.go
 EMAIL_WORKER_FILE = cmd/workers/send_email/main.go
+UPLOAD_AUTHOR_AVATAR_IMAGE_WORKER_FILE = cmd/workers/upload_author_avatar_image/main.go
 PRIVATE_KEY_FILE := ec_private_key.pem
 PUBLIC_KEY_FILE := ec_public_key.pem
 
@@ -34,6 +35,11 @@ w-email:
 	@clear
 	@echo "Iniciando worker de envio de email"
 	@go run $(EMAIL_WORKER_FILE)
+
+w-author-image:
+	@clear
+	@echo "Iniciando worker de envio de imagem do autor"
+	@go run $(UPLOAD_AUTHOR_AVATAR_IMAGE_WORKER_FILE)
 
 migration:
 	@echo "Rodando as migrações..."

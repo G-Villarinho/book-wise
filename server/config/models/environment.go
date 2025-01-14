@@ -24,8 +24,8 @@ type RedisEnvironment struct {
 }
 
 type CloudFlareEnvironment struct {
-	CloudFlareAccountAPI string `env:"CLOUD_FLARE_ACCOUNT_API"`
-	CloudFlareApiKey     string `env:"CLOUD_FLARE_API_KEY"`
+	CloudFlareImageApiUrl string `env:"CLOUD_FLARE_IMAGE_API_URL"`
+	CloudFlareImageApiKey string `env:"CLOUD_FLARE_IMAGE_API_KEY"`
 }
 
 type CacheEnvironment struct {

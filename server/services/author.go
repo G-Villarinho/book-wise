@@ -8,10 +8,11 @@ import (
 	"github.com/G-Villarinho/book-wise-api/models"
 	"github.com/G-Villarinho/book-wise-api/repositories"
 	"github.com/G-Villarinho/book-wise-api/utils"
-	"github.com/google/uuid"
+	jsoniter "github.com/json-iterator/go"
 )
 
 type AuthorService interface {
+	CreateAuthor(ctx context.Context, payload models.CreateAuthorPayload) error
 	FindOrCreateAuthors(ctx context.Context, fullNames []string) ([]models.Author, error)
 	GetAllAuthors(ctx context.Context) ([]models.AuthorResponse, error)
 }
@@ -19,6 +20,7 @@ type AuthorService interface {
 type authorService struct {
 	di               *internal.Di
 	authorRepository repositories.AuthorRepository
+	queueService     QueueService
 }
 
 func NewAuthorService(di *internal.Di) (AuthorService, error) {
@@ -27,55 +29,49 @@ func NewAuthorService(di *internal.Di) (AuthorService, error) {
 		return nil, err
 	}
 
+	queueService, err := internal.Invoke[QueueService](di)
+	if err != nil {
+		return nil, err
+	}
+
 	return &authorService{
 		di:               di,
 		authorRepository: categoryRepository,
+		queueService:     queueService,
 	}, nil
 }
 
-func (a *authorService) FindOrCreateAuthors(ctx context.Context, fullNames []string) ([]models.Author, error) {
-	var normalizedFullNames []string
+func (a *authorService) CreateAuthor(ctx context.Context, payload models.CreateAuthorPayload) error {
+	author := payload.ToAuthor()
 
-	for _, fullName := range fullNames {
-		normalizedFullNames = append(normalizedFullNames, utils.NormalizeString(fullName))
+	if err := a.authorRepository.CreateAuthor(ctx, *author); err != nil {
+		return fmt.Errorf("create author: %w", err)
 	}
 
-	existingAuthors, err := a.authorRepository.GetAuthorsByNormalizeFullNames(ctx, normalizedFullNames)
+	image, err := utils.ConvertImageToBytes(payload.Image)
 	if err != nil {
-		return nil, fmt.Errorf("get authors by normalized full names: %v", err)
+		return err
 	}
 
-	existingMap := make(map[string]struct{})
-	for _, author := range existingAuthors {
-		existingMap[author.NormalizedFullName] = struct{}{}
+	task := models.ImageUploadTask{
+		RecordID: author.ID,
+		Image:    image,
 	}
 
-	var newAuthors []models.Author
-	for _, fullName := range fullNames {
-		ID, err := uuid.NewV7()
-		if err != nil {
-			return nil, fmt.Errorf("genereate id key: %v", err)
-		}
-
-		normalizedFullName := utils.NormalizeString(fullName)
-		if _, exists := existingMap[normalizedFullName]; !exists {
-			newAuthors = append(newAuthors, models.Author{
-				BaseModel: models.BaseModel{
-					ID: ID,
-				},
-				FullName:           fullName,
-				NormalizedFullName: normalizedFullName,
-			})
-		}
+	message, err := jsoniter.Marshal(task)
+	if err != nil {
+		return fmt.Errorf("marshal upload image task: %w", err)
 	}
 
-	if len(newAuthors) > 0 {
-		if err = a.authorRepository.CreateBatch(ctx, newAuthors); err != nil {
-			return nil, fmt.Errorf("create batch: %v", err)
-		}
+	if err := a.queueService.Publish(string(UploadImageQueue), message); err != nil {
+		return err
 	}
 
-	return append(existingAuthors, newAuthors...), nil
+	return nil
+}
+
+func (a *authorService) FindOrCreateAuthors(ctx context.Context, fullNames []string) ([]models.Author, error) {
+	return nil, nil
 }
 
 func (a *authorService) GetAllAuthors(ctx context.Context) ([]models.AuthorResponse, error) {
