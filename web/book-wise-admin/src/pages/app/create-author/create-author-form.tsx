@@ -167,7 +167,8 @@ export function CreateAuthorForm() {
             </p>
           </div>
         </div>
-        <p className="mt-5">{biography || "A biografia será exibida aqui."}</p>
+        <hr className="my-4 border-gray-300" />
+        <p className="mt-5 text-zinc-700">{biography || "..."}</p>
       </div>
     </div>
   );
