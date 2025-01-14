@@ -6,11 +6,15 @@ import { Catalog } from "@/pages/app/catalog/catalog";
 import { CreateBook } from "@/pages/app/create-book/create-book";
 import { Library } from "@/pages/app/library/library";
 import { UpdateBook } from "@/pages/app/update-book/update-book";
+import { NotFound } from "@/pages/404";
+import { Authors } from "@/pages/app/authors/authors";
+import { CreateAuthor } from "@/pages/app/create-author/create-author";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <AppLayout />,
+    errorElement: <NotFound />,
     children: [
       {
         path: "/",
@@ -31,6 +35,14 @@ export const router = createBrowserRouter([
       {
         path: "/library",
         element: <Library />,
+      },
+      {
+        path: "/authors",
+        element: <Authors />,
+      },
+      {
+        path: "/authors/new",
+        element: <CreateAuthor />,
       },
     ],
   },

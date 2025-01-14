@@ -1,4 +1,4 @@
-import { Compass, Layout, LibraryBig } from "lucide-react";
+import { BookMarked, Compass, Layout, LibraryBig } from "lucide-react";
 import { SidebarItem } from "./sidebar-item";
 
 const guestRoutes = [
@@ -16,6 +16,11 @@ const guestRoutes = [
     icon: LibraryBig,
     label: "Biblioteca",
     href: "/library",
+  },
+  {
+    icon: BookMarked,
+    label: "Autores",
+    href: "/authors",
   },
 ];
 
