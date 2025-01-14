@@ -17,6 +17,8 @@ type Author struct {
 	FullName            string         `gorm:"column:FullName;type:varchar(255);not null"`
 	AvatarURL           sql.NullString `gorm:"column:AvatarUrl;type:varchar(355);null;default:null"`
 	AvatarImageClientID uuid.UUID      `gorm:"column:AvatarImageClientId;type:char(36);not null;index"`
+	Nationality         string         `gorm:"column:Nationality;type:varchar(70);not null"`
+	Biography           string         `gorm:"column:Biography;type:varchar(1000);not null"`
 	Books               []Book         `gorm:"many2many:BookAuthors;"`
 }
 
@@ -25,8 +27,10 @@ func (a *Author) TableName() string {
 }
 
 type CreateAuthorPayload struct {
-	FullName string                `json:"label" validate:"required,min=1,max=255"`
-	Image    *multipart.FileHeader `json:"image" validate:"required"`
+	FullName    string                `json:"label" validate:"required,min=1,max=255"`
+	Nationality string                `json:"nationality" validate:"required,min=1,max=70"`
+	Biography   string                `json:"biography" validate:"required,min=1,max=100"`
+	Image       *multipart.FileHeader `json:"image" validate:"required"`
 }
 
 type AuthorResponse struct {
@@ -48,6 +52,8 @@ func (cap *CreateAuthorPayload) ToAuthor() *Author {
 		BaseModel: BaseModel{
 			ID: ID,
 		},
-		FullName: cap.FullName,
+		FullName:    cap.FullName,
+		Nationality: cap.Nationality,
+		Biography:   cap.Biography,
 	}
 }

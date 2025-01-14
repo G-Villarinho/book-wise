@@ -74,8 +74,10 @@ func (a *authorHandler) CreateAuthor(ctx echo.Context) error {
 	}
 
 	payload := models.CreateAuthorPayload{
-		FullName: ctx.FormValue("fullName"),
-		Image:    file,
+		FullName:    ctx.FormValue("fullName"),
+		Image:       file,
+		Nationality: ctx.FormValue("nationality"),
+		Biography:   ctx.FormValue("biography"),
 	}
 
 	validationErrors, err := validation.ValidateStruct(&payload)
