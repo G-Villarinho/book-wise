@@ -24,7 +24,7 @@ func main() {
 
 	di := internal.NewDi()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	db, err := database.NewMysqlConnection(ctx)

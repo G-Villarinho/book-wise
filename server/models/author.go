@@ -29,7 +29,7 @@ func (a *Author) TableName() string {
 type CreateAuthorPayload struct {
 	FullName    string                `json:"label" validate:"required,min=1,max=255"`
 	Nationality string                `json:"nationality" validate:"required,min=1,max=70"`
-	Biography   string                `json:"biography" validate:"required,min=1,max=100"`
+	Biography   string                `json:"biography" validate:"required,min=1,max=1000"`
 	Image       *multipart.FileHeader `json:"image" validate:"required"`
 }
 
