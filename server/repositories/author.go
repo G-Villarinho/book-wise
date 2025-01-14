@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/G-Villarinho/book-wise-api/internal"
 	"github.com/G-Villarinho/book-wise-api/models"
@@ -15,6 +16,7 @@ type AuthorRepository interface {
 	CreateAuthor(ctx context.Context, author models.Author) error
 	UpdateAuthorAvatar(ctx context.Context, authorID, avatarImageClientID uuid.UUID, avatarURL string) error
 	GetAllAuthors(ctx context.Context) ([]models.Author, error)
+	GetPaginatedAuthors(ctx context.Context, pagination *models.AuthorPagination) (*models.PaginatedResponse[models.Author], error)
 }
 
 type authorRepository struct {
@@ -65,4 +67,26 @@ func (a *authorRepository) UpdateAuthorAvatar(ctx context.Context, authorID, ava
 	}
 
 	return nil
+}
+
+func (a *authorRepository) GetPaginatedAuthors(ctx context.Context, pagination *models.AuthorPagination) (*models.PaginatedResponse[models.Author], error) {
+	query := a.DB.WithContext(ctx).Model(&models.Author{})
+
+	if pagination.AuthorID != nil {
+		query = query.Where("Authors.Id LIKE ?", fmt.Sprintf("%%%s%%", *pagination.AuthorID))
+	}
+
+	if pagination.FullName != nil {
+		query = query.Where("Authors.FullName LIKE ?", fmt.Sprintf("%%%s%%", *pagination.FullName))
+	}
+
+	authors, err := paginate[models.Author](query, &pagination.Pagination, &models.Author{})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return authors, nil
 }

@@ -14,7 +14,8 @@ import (
 type AuthorService interface {
 	CreateAuthor(ctx context.Context, payload models.CreateAuthorPayload) error
 	FindOrCreateAuthors(ctx context.Context, fullNames []string) ([]models.Author, error)
-	GetAllAuthors(ctx context.Context) ([]models.AuthorResponse, error)
+	GetAllAuthors(ctx context.Context) ([]models.AuthorBasicInfoResponse, error)
+	GetPaginatedAuthors(ctx context.Context, pagination *models.AuthorPagination) (*models.PaginatedResponse[*models.AuthorDetailsResponse], error)
 }
 
 type authorService struct {
@@ -74,7 +75,7 @@ func (a *authorService) FindOrCreateAuthors(ctx context.Context, fullNames []str
 	return nil, nil
 }
 
-func (a *authorService) GetAllAuthors(ctx context.Context) ([]models.AuthorResponse, error) {
+func (a *authorService) GetAllAuthors(ctx context.Context) ([]models.AuthorBasicInfoResponse, error) {
 	authors, err := a.authorRepository.GetAllAuthors(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get all authors: %w", err)
@@ -84,10 +85,23 @@ func (a *authorService) GetAllAuthors(ctx context.Context) ([]models.AuthorRespo
 		return nil, models.ErrAuthorsNotFound
 	}
 
-	var authorsResponse []models.AuthorResponse
+	var authorsResponse []models.AuthorBasicInfoResponse
 	for _, author := range authors {
-		authorsResponse = append(authorsResponse, *author.ToAuthorResponse())
+		authorsResponse = append(authorsResponse, *author.ToAuthorBasicInfoResponse())
 	}
 
 	return authorsResponse, nil
+}
+
+func (a *authorService) GetPaginatedAuthors(ctx context.Context, pagination *models.AuthorPagination) (*models.PaginatedResponse[*models.AuthorDetailsResponse], error) {
+	pagiantedAuthors, err := a.authorRepository.GetPaginatedAuthors(ctx, pagination)
+	if err != nil {
+		return nil, fmt.Errorf("get paginated authors: %w", err)
+	}
+
+	paginatedAuthorsResponse := models.MapPaginatedResult(pagiantedAuthors, func(author models.Author) *models.AuthorDetailsResponse {
+		return author.ToAuthorDetailsResponse()
+	})
+
+	return paginatedAuthorsResponse, err
 }

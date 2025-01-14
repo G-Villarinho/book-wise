@@ -15,8 +15,9 @@ import (
 )
 
 type AuthorHandler interface {
-	GetAuthors(ctx echo.Context) error
+	GetAuthorsBasicInfos(ctx echo.Context) error
 	CreateAuthor(ctx echo.Context) error
+	GetAuthors(ctx echo.Context) error
 }
 
 type authorHandler struct {
@@ -36,7 +37,7 @@ func NewAuthorHandler(di *internal.Di) (AuthorHandler, error) {
 	}, nil
 }
 
-func (a *authorHandler) GetAuthors(ctx echo.Context) error {
+func (a *authorHandler) GetAuthorsBasicInfos(ctx echo.Context) error {
 	log := slog.With(
 		slog.String("handler", "author"),
 		slog.String("func", "GetAuthors"),
@@ -98,4 +99,31 @@ func (a *authorHandler) CreateAuthor(ctx echo.Context) error {
 	}
 
 	return ctx.NoContent(http.StatusCreated)
+}
+
+func (a *authorHandler) GetAuthors(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "authors"),
+		slog.String("func", "GetAuthors"),
+	)
+
+	authorPagination, err := models.NewAuthorPagination(
+		ctx.QueryParam("page"),
+		ctx.QueryParam("limit"),
+		ctx.QueryParam("sort"),
+		ctx.QueryParam("fullName"),
+		ctx.QueryParam("authorId"),
+	)
+	if err != nil {
+		log.Error(err.Error())
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_pagination", "Parâmetros de buscas inválidos")
+	}
+
+	response, err := a.authorService.GetPaginatedAuthors(ctx.Request().Context(), authorPagination)
+	if err != nil {
+		log.Error(err.Error())
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.JSON(http.StatusOK, response)
 }
