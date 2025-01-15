@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/G-Villarinho/book-wise-api/clients"
 	"github.com/G-Villarinho/book-wise-api/config"
@@ -24,9 +23,7 @@ func main() {
 
 	di := internal.NewDi()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-	defer cancel()
-
+	ctx := context.Background()
 	db, err := database.NewMysqlConnection(ctx)
 	if err != nil {
 		log.Fatal("error to connect to database: ", err)
