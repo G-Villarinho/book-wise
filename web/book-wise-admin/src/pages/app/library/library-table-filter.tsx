@@ -1,4 +1,4 @@
-import { GetAuthors } from "@/api/get-authors";
+import { GetAuthorsBasicInfo } from "@/api/get-authors-lite";
 import { GetCategories } from "@/api/get-categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,7 +100,7 @@ export function LibraryTableFilter() {
 
   const { data: authors } = useQuery({
     queryKey: ["authors"],
-    queryFn: GetAuthors,
+    queryFn: GetAuthorsBasicInfo,
   });
 
   const { data: categories } = useQuery({

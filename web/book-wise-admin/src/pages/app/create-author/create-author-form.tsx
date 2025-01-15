@@ -10,6 +10,7 @@ import { createAuthor } from "@/api/create-author";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { CreateAuthorPreview } from "./create-author-preview";
 
 const createAuthorSchema = z.object({
   fullName: z
@@ -146,30 +147,12 @@ export function CreateAuthorForm() {
         </form>
       </div>
 
-      {/* Preview */}
-      <div className="w-full lg:w-1/2 bg-gray-100 p-6 rounded-lg">
-        <div className="flex items-center gap-4">
-          <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-            {previewUrl ? (
-              <img
-                src={previewUrl}
-                alt="Foto do autor"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <User className="text-gray-500" size={40} />
-            )}
-          </div>
-          <div>
-            <h2 className="font-semibold">{fullName || "Nome do Autor"}</h2>
-            <p className="text-sm text-zinc-700">
-              {nationality || "Nacionalidade"}
-            </p>
-          </div>
-        </div>
-        <hr className="my-4 border-gray-300" />
-        <p className="mt-5 text-zinc-700">{biography || "..."}</p>
-      </div>
+      <CreateAuthorPreview
+        fullName={fullName}
+        nationality={nationality}
+        biography={biography}
+        previewUrl={previewUrl}
+      />
     </div>
   );
 }
