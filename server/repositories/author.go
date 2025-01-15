@@ -17,6 +17,8 @@ type AuthorRepository interface {
 	UpdateAuthorAvatar(ctx context.Context, authorID, avatarImageClientID uuid.UUID, avatarURL string) error
 	GetAllAuthors(ctx context.Context) ([]models.Author, error)
 	GetPaginatedAuthors(ctx context.Context, pagination *models.AuthorPagination) (*models.PaginatedResponse[models.Author], error)
+	DeleteAuthorByID(ctx context.Context, ID uuid.UUID) error
+	GetAuthorByID(ctx context.Context, ID uuid.UUID) (*models.Author, error)
 }
 
 type authorRepository struct {
@@ -89,4 +91,31 @@ func (a *authorRepository) GetPaginatedAuthors(ctx context.Context, pagination *
 	}
 
 	return authors, nil
+}
+
+func (a *authorRepository) DeleteAuthorByID(ctx context.Context, ID uuid.UUID) error {
+	if err := a.DB.
+		WithContext(ctx).
+		Where("Id = ?", ID).
+		Delete(&models.Author{}).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *authorRepository) GetAuthorByID(ctx context.Context, ID uuid.UUID) (*models.Author, error) {
+	var author models.Author
+	if err := a.DB.
+		WithContext(ctx).
+		Where("Id = ?", ID).
+		First(&author).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return &author, nil
 }

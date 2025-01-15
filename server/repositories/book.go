@@ -17,6 +17,7 @@ type BookRepository interface {
 	GetPaginatedBooks(ctx context.Context, pagination *models.BookPagination) (*models.PaginatedResponse[models.Book], error)
 	DeleteBookByID(ctx context.Context, ID uuid.UUID) error
 	UpdatePublicationStatus(ctx context.Context, ID uuid.UUID, publishedStatus bool) error
+	DeleteBooksByAuthorID(ctx context.Context, authorID uuid.UUID) error
 }
 
 type bookRepository struct {
@@ -128,6 +129,35 @@ func (r *bookRepository) DeleteBookByID(ctx context.Context, ID uuid.UUID) error
 
 func (r *bookRepository) UpdatePublicationStatus(ctx context.Context, ID uuid.UUID, publishedStatus bool) error {
 	if err := r.DB.WithContext(ctx).Model(&models.Book{}).Where("Id = ?", ID.String()).UpdateColumn("Published", publishedStatus).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *bookRepository) DeleteBooksByAuthorID(ctx context.Context, authorID uuid.UUID) error {
+	err := r.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var books []models.Book
+		if err := tx.Joins("JOIN BookAuthors ON BookAuthors.BookID = Books.Id").
+			Where("BookAuthors.AuthorID = ?", authorID).
+			Find(&books).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Exec("DELETE FROM BookAuthors WHERE AuthorID = ?", authorID).Error; err != nil {
+			return err
+		}
+
+		for _, book := range books {
+			if err := tx.Delete(&book).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
 		return err
 	}
 

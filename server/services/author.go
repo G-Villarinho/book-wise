@@ -8,6 +8,7 @@ import (
 	"github.com/G-Villarinho/book-wise-api/models"
 	"github.com/G-Villarinho/book-wise-api/repositories"
 	"github.com/G-Villarinho/book-wise-api/utils"
+	"github.com/google/uuid"
 	jsoniter "github.com/json-iterator/go"
 )
 
@@ -16,29 +17,37 @@ type AuthorService interface {
 	FindOrCreateAuthors(ctx context.Context, fullNames []string) ([]models.Author, error)
 	GetAllAuthors(ctx context.Context) ([]models.AuthorBasicInfoResponse, error)
 	GetPaginatedAuthors(ctx context.Context, pagination *models.AuthorPagination) (*models.PaginatedResponse[*models.AuthorDetailsResponse], error)
+	DeleteAuthorByID(ctx context.Context, ID uuid.UUID) error
 }
 
 type authorService struct {
 	di               *internal.Di
-	authorRepository repositories.AuthorRepository
 	queueService     QueueService
+	authorRepository repositories.AuthorRepository
+	bookRepository   repositories.BookRepository
 }
 
 func NewAuthorService(di *internal.Di) (AuthorService, error) {
-	categoryRepository, err := internal.Invoke[repositories.AuthorRepository](di)
+	queueService, err := internal.Invoke[QueueService](di)
 	if err != nil {
 		return nil, err
 	}
 
-	queueService, err := internal.Invoke[QueueService](di)
+	authorRepository, err := internal.Invoke[repositories.AuthorRepository](di)
+	if err != nil {
+		return nil, err
+	}
+
+	bookRepository, err := internal.Invoke[repositories.BookRepository](di)
 	if err != nil {
 		return nil, err
 	}
 
 	return &authorService{
 		di:               di,
-		authorRepository: categoryRepository,
 		queueService:     queueService,
+		authorRepository: authorRepository,
+		bookRepository:   bookRepository,
 	}, nil
 }
 
@@ -104,4 +113,25 @@ func (a *authorService) GetPaginatedAuthors(ctx context.Context, pagination *mod
 	})
 
 	return paginatedAuthorsResponse, err
+}
+
+func (a *authorService) DeleteAuthorByID(ctx context.Context, ID uuid.UUID) error {
+	author, err := a.authorRepository.GetAuthorByID(ctx, ID)
+	if err != nil {
+		return fmt.Errorf("get author by id %q: %w", ID, err)
+	}
+
+	if author == nil {
+		return models.ErrAuthorsNotFound
+	}
+
+	if err := a.bookRepository.DeleteBooksByAuthorID(ctx, ID); err != nil {
+		return fmt.Errorf("delete books by author id %q: %w", ID, err)
+	}
+
+	if err := a.authorRepository.DeleteAuthorByID(ctx, ID); err != nil {
+		return fmt.Errorf("delete author by id %q: %w", ID, err)
+	}
+
+	return nil
 }

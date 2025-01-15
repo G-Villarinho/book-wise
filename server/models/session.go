@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	ErrSessionNotFound = errors.New("session not found in the database")
+	ErrSessionNotFound = errors.New("session not found in the cache")
 )
 
 type Session struct {

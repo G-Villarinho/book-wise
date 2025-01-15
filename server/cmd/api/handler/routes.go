@@ -80,4 +80,5 @@ func setupAuthorHandler(e *echo.Echo, di *internal.Di) {
 	group.GET("/lite", authorHandler.GetAuthorsBasicInfos)
 	group.GET("", authorHandler.GetAuthors)
 	group.POST("", authorHandler.CreateAuthor)
+	group.DELETE("/:id", authorHandler.DeleteAuthor)
 }

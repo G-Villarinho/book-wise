@@ -11,6 +11,7 @@ import (
 	"github.com/G-Villarinho/book-wise-api/models"
 	"github.com/G-Villarinho/book-wise-api/services"
 	"github.com/G-Villarinho/book-wise-api/utils"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -18,6 +19,7 @@ type AuthorHandler interface {
 	GetAuthorsBasicInfos(ctx echo.Context) error
 	CreateAuthor(ctx echo.Context) error
 	GetAuthors(ctx echo.Context) error
+	DeleteAuthor(ctx echo.Context) error
 }
 
 type authorHandler struct {
@@ -126,4 +128,29 @@ func (a *authorHandler) GetAuthors(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, response)
+}
+
+func (a *authorHandler) DeleteAuthor(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "authors"),
+		slog.String("func", "DeleteAuthor"),
+	)
+
+	ID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		log.Warn(err.Error())
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_params", "Parametros de busca inválidos.")
+	}
+
+	if err := a.authorService.DeleteAuthorByID(ctx.Request().Context(), ID); err != nil {
+		log.Error(err.Error())
+
+		if errors.Is(err, models.ErrAuthorNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "not_found", "Não foi encontrado um autor para remover com esses parâmetros de busca.")
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.NoContent(http.StatusNoContent)
 }
