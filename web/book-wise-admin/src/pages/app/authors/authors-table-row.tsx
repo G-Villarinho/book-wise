@@ -3,6 +3,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { AvatarImage } from "@radix-ui/react-avatar";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale/pt-BR";
+import { AuthorsTabelCellActions } from "./authors-table-cell-actions";
 
 interface AuthorsTableRowProps {
   author: {
@@ -18,8 +19,8 @@ interface AuthorsTableRowProps {
 export function AuthorsTableRow({ author }: AuthorsTableRowProps) {
   return (
     <TableRow>
-      <TableCell>
-        <Avatar className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200">
+      <TableCell className="text-center">
+        <Avatar className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200 mx-auto">
           <AvatarImage
             src={author.avatarUrl}
             className="w-full h-full object-cover"
@@ -44,7 +45,9 @@ export function AuthorsTableRow({ author }: AuthorsTableRowProps) {
       <TableCell className="font-mono text-xs font-medium">
         {author.nationality}
       </TableCell>
-      <TableCell className="font-mono text-xs font-medium">Action</TableCell>
+      <TableCell className="font-mono text-xs font-medium text-center">
+        <AuthorsTabelCellActions authorId={author.id} />
+      </TableCell>
     </TableRow>
   );
 }

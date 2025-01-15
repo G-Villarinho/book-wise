@@ -95,7 +95,7 @@ export function CreateAuthorForm() {
       <div className="flex flex-col w-full lg:w-1/2 space-y-6">
         <div className="flex flex-col items-center">
           <label htmlFor="imageUpload" className="cursor-pointer group">
-            <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center group-hover:opacity-80 transition-opacity">
+            <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gray-200 dark:bg-zinc-700 flex items-center justify-center group-hover:opacity-80 transition-opacity">
               {previewUrl ? (
                 <img
                   src={previewUrl}
@@ -103,7 +103,7 @@ export function CreateAuthorForm() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <User className="text-gray-500" size={40} />
+                <User className="text-gray-500 dark:text-gray-400" size={40} />
               )}
             </div>
           </label>
@@ -115,7 +115,7 @@ export function CreateAuthorForm() {
             className="hidden"
           />
           {errors.profilePicture && (
-            <p className="text-sm text-red-600 mt-1">
+            <p className="text-sm text-red-600 dark:text-red-400 mt-1">
               {errors.profilePicture.message}
             </p>
           )}
@@ -129,10 +129,18 @@ export function CreateAuthorForm() {
             {...register("fullName")}
             placeholder="Digite o nome completo"
           />
-          {errors.fullName && <p>{errors.fullName.message}</p>}
+          {errors.fullName && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {errors.fullName.message}
+            </p>
+          )}
 
           <Input {...register("nationality")} placeholder="Nacionalidade" />
-          {errors.nationality && <p>{errors.nationality.message}</p>}
+          {errors.nationality && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {errors.nationality.message}
+            </p>
+          )}
 
           <Controller
             name="biography"
@@ -141,7 +149,11 @@ export function CreateAuthorForm() {
               <Textarea {...field} placeholder="Breve biografia" rows={3} />
             )}
           />
-          {errors.biography && <p>{errors.biography.message}</p>}
+          {errors.biography && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {errors.biography.message}
+            </p>
+          )}
 
           <Button type="submit">Criar autor</Button>
         </form>

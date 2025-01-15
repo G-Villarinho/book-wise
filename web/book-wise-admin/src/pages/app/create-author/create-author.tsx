@@ -10,8 +10,8 @@ export function CreateAuthor() {
         title="Criar autor"
         subtitle="Adicione informações sobre o autor"
       />
-      <div className="flex flex-col items-center px-4">
-        <div className="flex flex-col w-full max-w-5xl p-8 bg-white shadow rounded-lg">
+      <div className="flex flex-col items-center px-4 mt-8">
+        <div className="flex flex-col w-full max-w-5xl p-8 bg-white dark:bg-zinc-900 shadow-md rounded-lg">
           <CreateAuthorForm />
         </div>
       </div>

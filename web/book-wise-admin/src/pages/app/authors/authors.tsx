@@ -16,6 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getAuthors } from "@/api/get-authors";
 import { Pagination } from "@/components/pagination";
 import { AuthorsTableRow } from "./authors-table-row";
+import { AuthorTableFilter } from "./authors-table-filter";
 
 export function Authors() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -66,16 +67,17 @@ export function Authors() {
 
       <div className="flex flex-col gap-4 mt-6 mr-4">
         <div className="space-y-2.5">
+          <AuthorTableFilter />
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[25px]"></TableHead>
-                  <TableHead className="w-[120px]">Identificador</TableHead>
-                  <TableHead className="w-[80px]">Nome completo</TableHead>
-                  <TableHead className="w-[20px]">Criado há</TableHead>
-                  <TableHead className="w-[20px]">Nacionalidade</TableHead>
-                  <TableHead className="w-[44px]"></TableHead>
+                  <TableHead className="w-[50px] text-center"></TableHead>
+                  <TableHead className="w-[110px]">Identificador</TableHead>
+                  <TableHead className="w-[150px]">Nome completo</TableHead>
+                  <TableHead className="w-[100px]">Criado há</TableHead>
+                  <TableHead className="w-[100px]">Nacionalidade</TableHead>
+                  <TableHead className="w-[75px] text-center"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

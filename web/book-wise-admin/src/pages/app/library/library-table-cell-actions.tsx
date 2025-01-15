@@ -100,10 +100,6 @@ export function LibraryTableCellActions({
       },
     });
 
-  const { mutateAsync: deleteBookFn } = useMutation({
-    mutationFn: deleteBook,
-  });
-
   async function handlePublishToggle() {
     if (isPublished) {
       await unpublishBookFn({ bookId });
@@ -115,6 +111,10 @@ export function LibraryTableCellActions({
   function handleUpdateBook() {
     navigate(`/book/update/${bookId}`);
   }
+
+  const { mutateAsync: deleteBookFn } = useMutation({
+    mutationFn: deleteBook,
+  });
 
   async function handleDeleteBook() {
     try {
