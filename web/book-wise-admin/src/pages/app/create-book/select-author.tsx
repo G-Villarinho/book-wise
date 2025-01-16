@@ -6,14 +6,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
 import { Pagination } from "@/components/pagination";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Author } from "@/@types/author";
 import { Search, X } from "lucide-react";
 import { AuthorChip } from "./author-chip";
+import { useFormContext } from "react-hook-form";
+import { BookSchemaData } from "./create-book-form";
+import { useNavigate } from "react-router-dom"; // Adicionando a importação para navegação
 
 interface SelectAuthorProps {
   open: boolean;
@@ -32,13 +34,12 @@ export function SelectAuthor({
   onAuthorsChange,
   onClose,
 }: SelectAuthorProps) {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const { setValue } = useFormContext<BookSchemaData>();
   const [searchQuery, setSearchQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
   const [selectedAuthorPreview, setSelectedAuthorPreview] =
     useState<Author[]>(selectedAuthors);
-
-  const page = parseInt(searchParams.get("page") || "1", 10);
+  const [page, setPage] = useState(1); // Página gerenciada localmente
 
   const { data: result, isLoading } = useQuery({
     queryKey: ["authors", submittedQuery, page],
@@ -52,20 +53,21 @@ export function SelectAuthor({
     enabled: open,
   });
 
+  const navigate = useNavigate(); // Instanciando o hook de navegação
+
   function handlePaginate(pageIndex: number) {
-    setSearchParams((prev) => {
-      prev.set("page", pageIndex.toString());
-      return prev;
-    });
+    setPage(pageIndex);
   }
 
   function handleSearch() {
     setSubmittedQuery(searchQuery);
+    setPage(1);
   }
 
   function handleClearFilter() {
     setSearchQuery("");
     setSubmittedQuery("");
+    setPage(1);
   }
 
   function toggleAuthorSelection(author: Author) {
@@ -78,6 +80,13 @@ export function SelectAuthor({
     onAuthorsChange(updatedSelected);
   }
 
+  useEffect(() => {
+    setValue(
+      "authors",
+      selectedAuthorPreview.map((author) => ({ id: author.id }))
+    );
+  }, [selectedAuthorPreview, setValue]);
+
   const handleRemoveAuthor = (authorId: string) => {
     const updatedAuthors = selectedAuthorPreview.filter(
       (author) => author.id !== authorId
@@ -85,6 +94,14 @@ export function SelectAuthor({
     setSelectedAuthorPreview(updatedAuthors);
     onAuthorsChange(updatedAuthors);
   };
+
+  function handleAddAuthors() {
+    onClose();
+  }
+
+  function handleCreateAuthor() {
+    navigate("/authors/new"); // Redireciona para a página de criação de autor
+  }
 
   return (
     <DialogContent className="sm:max-w-[600px]">
@@ -154,8 +171,23 @@ export function SelectAuthor({
           </>
         )
       )}
+
+      {result?.data.length === 0 && !isLoading && (
+        <div className="mt-4 text-center">
+          <p>Nenhum autor encontrado. Deseja criar um novo autor?</p>
+          <Button
+            className="mt-4"
+            onClick={handleCreateAuthor}
+            variant="outline"
+            size="sm"
+          >
+            Criar Autor
+          </Button>
+        </div>
+      )}
+
       <div className="flex justify-end mt-4">
-        <Button onClick={onClose} variant="outline">
+        <Button onClick={handleAddAuthors} variant="outline">
           Adicionar autores
         </Button>
       </div>
