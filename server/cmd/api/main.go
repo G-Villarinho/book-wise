@@ -34,7 +34,7 @@ func main() {
 	}))
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{config.Env.FrontURL},
+		AllowOrigins:     []string{config.Env.AdminFrontURL, config.Env.MemberFrontURL},
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 		AllowCredentials: true,
 	}))

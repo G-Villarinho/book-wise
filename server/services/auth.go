@@ -17,7 +17,7 @@ import (
 )
 
 type AuthService interface {
-	SignIn(ctx context.Context, email string) error
+	SignIn(ctx context.Context, email string, role models.Role) error
 	VeryfyMagicLink(ctx context.Context, code uuid.UUID) (string, error)
 	SignOut(ctx context.Context) error
 }
@@ -62,8 +62,8 @@ func NewAuthService(di *internal.Di) (AuthService, error) {
 	}, nil
 }
 
-func (a *authService) SignIn(ctx context.Context, email string) error {
-	user, err := a.userRespository.GetUserByEmail(ctx, email)
+func (a *authService) SignIn(ctx context.Context, email string, role models.Role) error {
+	user, err := a.userRespository.GetUserByEmail(ctx, email, role)
 	if err != nil {
 		return err
 	}
@@ -81,7 +81,12 @@ func (a *authService) SignIn(ctx context.Context, email string) error {
 		return fmt.Errorf("generate code: %w", err)
 	}
 
-	magicLink := fmt.Sprintf("%s/auth/link?code=%s&redirect=%s", config.Env.APIBaseURL, code.String(), config.Env.RedirectURL)
+	var magicLink string
+	if role == models.Admin {
+		magicLink = fmt.Sprintf("%s/auth/link?code=%s&redirect=%s", config.Env.APIBaseURL, code.String(), config.Env.RedirectAdminURL)
+	} else {
+		magicLink = fmt.Sprintf("%s/auth/link?code=%s&redirect=%s", config.Env.APIBaseURL, code.String(), config.Env.RedirectMemberURL)
+	}
 
 	if err := a.cacheService.Set(ctx, getMagicLinkKey(code), user.ID.String(), 15*time.Minute); err != nil {
 		return fmt.Errorf("set magic link: %w", err)

@@ -15,7 +15,8 @@ import (
 )
 
 type UserHandler interface {
-	CreateUser(ctx echo.Context) error
+	CreateMember(ctx echo.Context) error
+	CreateAdmin(ctx echo.Context) error
 }
 
 type userHandler struct {
@@ -35,10 +36,10 @@ func NewUserHandler(di *internal.Di) (UserHandler, error) {
 	}, nil
 }
 
-func (u *userHandler) CreateUser(ctx echo.Context) error {
+func (u *userHandler) CreateMember(ctx echo.Context) error {
 	log := slog.With(
 		slog.String("handler", "user"),
-		slog.String("func", "GetUser"),
+		slog.String("func", "CreateMember"),
 	)
 
 	var payload models.CreateUserPayload
@@ -58,11 +59,47 @@ func (u *userHandler) CreateUser(ctx echo.Context) error {
 		return responses.NewValidationErrorResponse(ctx, validationErrors)
 	}
 
-	if err := u.userService.CreateUser(ctx.Request().Context(), payload); err != nil {
+	if err := u.userService.CreateUser(ctx.Request().Context(), payload, models.Member); err != nil {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrEmailAlreadyExists) {
 			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusConflict, "Conflito", "O e-mail informado já está em uso. Por favor, tente novamente com outro e-mail.")
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.NoContent(http.StatusCreated)
+}
+
+func (u *userHandler) CreateAdmin(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "user"),
+		slog.String("func", "CreateAdmin"),
+	)
+
+	var payload models.CreateUserPayload
+	if err := jsoniter.NewDecoder(ctx.Request().Body).Decode(&payload); err != nil {
+		log.Warn("Error to decode JSON payload", slog.String("error", err.Error()))
+		return responses.CannotBindPayloadAPIErrorResponse(ctx)
+	}
+
+	validationErrors, err := validation.ValidateStruct(&payload)
+	if err != nil {
+		log.Warn(err.Error())
+		return responses.CannotBindPayloadAPIErrorResponse(ctx)
+	}
+
+	if validationErrors != nil {
+		log.Warn("Error to validate JSON payload")
+		return responses.NewValidationErrorResponse(ctx, validationErrors)
+	}
+
+	if err := u.userService.CreateUser(ctx.Request().Context(), payload, models.Admin); err != nil {
+		log.Error(err.Error())
+
+		if errors.Is(err, models.ErrEmailAlreadyExists) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusConflict, "Conflito", "O e-mail informado já está em uso por outro admin. Por favor, tente novamente com outro e-mail.")
 		}
 
 		return responses.InternalServerAPIErrorResponse(ctx)

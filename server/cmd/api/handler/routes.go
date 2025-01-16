@@ -25,7 +25,8 @@ func setupUserRoutes(e *echo.Echo, di *internal.Di) {
 
 	group := e.Group("/v1/users")
 
-	group.POST("", userHandler.CreateUser)
+	group.POST("/member", userHandler.CreateMember)
+	group.POST("/admin", userHandler.CreateAdmin, middleware.EnsureAuthenticated(di), middleware.EnsurePermission(models.CreateAdminPermission))
 }
 
 func setupAuthRoutes(e *echo.Echo, di *internal.Di) {
@@ -36,7 +37,8 @@ func setupAuthRoutes(e *echo.Echo, di *internal.Di) {
 
 	group := e.Group("/v1/auth")
 
-	group.POST("/sign-in", authHandler.SignIn)
+	group.POST("/member/sign-in", authHandler.SignInMember)
+	group.POST("/admin/sign-in", authHandler.SignInAdmin)
 	group.GET("/link", authHandler.VeryfyMagicLink)
 	group.POST("/sign-out", authHandler.SignOut, middleware.EnsureAuthenticated(di))
 }

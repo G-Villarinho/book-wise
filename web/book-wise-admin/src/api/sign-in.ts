@@ -5,5 +5,5 @@ export interface SignInRequest {
 }
 
 export async function signIn({ email }: SignInRequest) {
-  await api.post("/auth/sign-in", { email });
+  await api.post("/auth/admin/sign-in", { email });
 }

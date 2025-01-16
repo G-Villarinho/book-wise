@@ -11,7 +11,7 @@ import (
 )
 
 type UserService interface {
-	CreateUser(ctx context.Context, payload models.CreateUserPayload) error
+	CreateUser(ctx context.Context, payload models.CreateUserPayload, role models.Role) error
 }
 
 type userService struct {
@@ -38,8 +38,8 @@ func NewUserService(di *internal.Di) (UserService, error) {
 	}, nil
 }
 
-func (u *userService) CreateUser(ctx context.Context, payload models.CreateUserPayload) error {
-	user, err := u.userRepository.GetUserByEmail(ctx, payload.Email)
+func (u *userService) CreateUser(ctx context.Context, payload models.CreateUserPayload, role models.Role) error {
+	user, err := u.userRepository.GetUserByEmail(ctx, payload.Email, role)
 	if err != nil {
 		return fmt.Errorf("get user by email: %w", err)
 	}
@@ -48,7 +48,7 @@ func (u *userService) CreateUser(ctx context.Context, payload models.CreateUserP
 		return models.ErrEmailAlreadyExists
 	}
 
-	user = payload.ToUser()
+	user = payload.ToUser(role)
 	if err := u.userRepository.CreateUser(ctx, *user); err != nil {
 		return fmt.Errorf("create user: %w", err)
 	}

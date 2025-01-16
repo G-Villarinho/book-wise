@@ -8,12 +8,14 @@ type Environment struct {
 	Cache             CacheEnvironment
 	Email             EmailEnvironment
 	APIBaseURL        string `env:"API_BASE_URL"`
-	RedirectURL       string `env:"REDIRECT_URL"`
+	RedirectAdminURL  string `env:"REDIRECT_ADMIN_URL"`
+	RedirectMemberURL string `env:"REDIRECT_MEMBER_URL"`
 	CookieName        string `env:"COOKIE_NAME"`
 	RabbitMQURL       string `env:"RABBITMQ_URL"`
 	APIPort           int    `env:"API_PORT"`
 	ConnectionString  string `env:"CONNECTION_STRING"`
-	FrontURL          string `env:"FRONT_URL"`
+	AdminFrontURL     string `env:"ADMIN_FRONT_URL"`
+	MemberFrontURL    string `env:"MEMBER_FRONT_URL"`
 	GoogleBooksApiUrl string `env:"GOOGLE_BOOKS_URL_API"`
 }
 

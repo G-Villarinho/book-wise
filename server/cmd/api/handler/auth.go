@@ -17,7 +17,8 @@ import (
 )
 
 type AuthHandler interface {
-	SignIn(ctx echo.Context) error
+	SignInMember(ctx echo.Context) error
+	SignInAdmin(ctx echo.Context) error
 	VeryfyMagicLink(ctx echo.Context) error
 	SignOut(ctx echo.Context) error
 }
@@ -39,7 +40,7 @@ func NewAuthHandler(di *internal.Di) (AuthHandler, error) {
 	}, nil
 }
 
-func (a *authHandler) SignIn(ctx echo.Context) error {
+func (a *authHandler) SignInMember(ctx echo.Context) error {
 	log := slog.With(
 		slog.String("handler", "auth"),
 		slog.String("func", "SignIn"),
@@ -62,7 +63,47 @@ func (a *authHandler) SignIn(ctx echo.Context) error {
 		return responses.NewValidationErrorResponse(ctx, validationErrors)
 	}
 
-	if err := a.authService.SignIn(ctx.Request().Context(), payload.Email); err != nil {
+	if err := a.authService.SignIn(ctx.Request().Context(), payload.Email, models.Member); err != nil {
+		log.Error(err.Error())
+
+		if errors.Is(err, models.ErrUserNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Não foi encontrado um usuário com o e-mail informado. Por favor, verifique e tente novamente.")
+		}
+
+		if errors.Is(err, models.ErrUserBlocked) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "user_blocked", "Sua conta está bloqueada. Entre em contato com o suporte para mais informações.")
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.NoContent(http.StatusOK)
+}
+
+func (a *authHandler) SignInAdmin(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "auth"),
+		slog.String("func", "SignIn"),
+	)
+
+	var payload models.SignInPayload
+	if err := jsoniter.NewDecoder(ctx.Request().Body).Decode(&payload); err != nil {
+		log.Warn("Error to decode JSON payload", slog.String("error", err.Error()))
+		return responses.CannotBindPayloadAPIErrorResponse(ctx)
+	}
+
+	validationErrors, err := validation.ValidateStruct(&payload)
+	if err != nil {
+		log.Warn(err.Error())
+		return responses.CannotBindPayloadAPIErrorResponse(ctx)
+	}
+
+	if validationErrors != nil {
+		log.Warn("Error to validate JSON payload")
+		return responses.NewValidationErrorResponse(ctx, validationErrors)
+	}
+
+	if err := a.authService.SignIn(ctx.Request().Context(), payload.Email, models.Admin); err != nil {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrUserNotFound) {
@@ -96,7 +137,7 @@ func (a *authHandler) VeryfyMagicLink(ctx echo.Context) error {
 		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "É necessário informar uma URL de redirecionamento para continuar.")
 	}
 
-	if redirectURL != config.Env.RedirectURL {
+	if redirectURL != config.Env.RedirectAdminURL {
 		log.Warn("Redirect URL is invalid")
 		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "A URL de redirecionamento informada não é válida. Entre em contato com o suporte.")
 	}

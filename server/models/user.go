@@ -52,7 +52,7 @@ type UserResponse struct {
 	Avatar   string `json:"avatar,omitempty"`
 }
 
-func (cup *CreateUserPayload) ToUser() *User {
+func (cup *CreateUserPayload) ToUser(role Role) *User {
 	ID, _ := uuid.NewV7()
 
 	return &User{
@@ -61,5 +61,6 @@ func (cup *CreateUserPayload) ToUser() *User {
 		},
 		FullName: cup.FullName,
 		Email:    cup.Email,
+		Role:     role,
 	}
 }
