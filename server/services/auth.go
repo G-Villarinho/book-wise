@@ -17,7 +17,7 @@ import (
 )
 
 type AuthService interface {
-	SignIn(ctx context.Context, email string, role models.Role) error
+	SignIn(ctx context.Context, email string, roles []models.Role) error
 	VeryfyMagicLink(ctx context.Context, code uuid.UUID) (string, error)
 	SignOut(ctx context.Context) error
 }
@@ -62,8 +62,8 @@ func NewAuthService(di *internal.Di) (AuthService, error) {
 	}, nil
 }
 
-func (a *authService) SignIn(ctx context.Context, email string, role models.Role) error {
-	user, err := a.userRespository.GetUserByEmail(ctx, email, role)
+func (a *authService) SignIn(ctx context.Context, email string, roles []models.Role) error {
+	user, err := a.userRespository.GetUserByEmail(ctx, email, roles)
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func (a *authService) SignIn(ctx context.Context, email string, role models.Role
 	}
 
 	var magicLink string
-	if role == models.Admin {
+	if containsRole(roles, models.Admin) {
 		magicLink = fmt.Sprintf("%s/auth/link?code=%s&redirect=%s", config.Env.APIBaseURL, code.String(), config.Env.RedirectAdminURL)
 	} else {
 		magicLink = fmt.Sprintf("%s/auth/link?code=%s&redirect=%s", config.Env.APIBaseURL, code.String(), config.Env.RedirectMemberURL)
@@ -145,6 +145,15 @@ func (a *authService) SignOut(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func containsRole(roles []models.Role, role models.Role) bool {
+	for _, r := range roles {
+		if r == role {
+			return true
+		}
+	}
+	return false
 }
 
 func getMagicLinkKey(code uuid.UUID) string {

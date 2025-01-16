@@ -63,7 +63,7 @@ func (a *authHandler) SignInMember(ctx echo.Context) error {
 		return responses.NewValidationErrorResponse(ctx, validationErrors)
 	}
 
-	if err := a.authService.SignIn(ctx.Request().Context(), payload.Email, models.Member); err != nil {
+	if err := a.authService.SignIn(ctx.Request().Context(), payload.Email, []models.Role{models.Member}); err != nil {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrUserNotFound) {
@@ -103,7 +103,7 @@ func (a *authHandler) SignInAdmin(ctx echo.Context) error {
 		return responses.NewValidationErrorResponse(ctx, validationErrors)
 	}
 
-	if err := a.authService.SignIn(ctx.Request().Context(), payload.Email, models.Admin); err != nil {
+	if err := a.authService.SignIn(ctx.Request().Context(), payload.Email, []models.Role{models.Admin, models.Owner}); err != nil {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrUserNotFound) {

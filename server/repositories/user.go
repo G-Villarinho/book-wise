@@ -12,7 +12,7 @@ import (
 
 type UserRepository interface {
 	CreateUser(ctx context.Context, user models.User) error
-	GetUserByEmail(ctx context.Context, email string, role models.Role) (*models.User, error)
+	GetUserByEmail(ctx context.Context, email string, roles []models.Role) (*models.User, error)
 	GetUserByID(ctx context.Context, ID uuid.UUID) (*models.User, error)
 }
 
@@ -41,9 +41,9 @@ func (u *userRepository) CreateUser(ctx context.Context, user models.User) error
 	return nil
 }
 
-func (u *userRepository) GetUserByEmail(ctx context.Context, email string, role models.Role) (*models.User, error) {
+func (u *userRepository) GetUserByEmail(ctx context.Context, email string, roles []models.Role) (*models.User, error) {
 	var user *models.User
-	if err := u.DB.WithContext(ctx).Where("email = ? AND role = ?", email, role).First(&user).Error; err != nil {
+	if err := u.DB.WithContext(ctx).Where("email = ? AND role IN ?", email, roles).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

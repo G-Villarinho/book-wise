@@ -1,5 +1,7 @@
 import { BookMarked, Compass, Layout, LibraryBig, Shield } from "lucide-react";
 import { SidebarItem } from "./sidebar-item";
+import { useContext } from "react";
+import { UserContext } from "@/contexts/user-context";
 
 const guestRoutes = [
   {
@@ -26,11 +28,18 @@ const guestRoutes = [
     icon: Shield,
     label: "Administradores",
     href: "/admins",
+    requiredRole: "owner",
   },
 ];
 
 export function SidebarRoutes() {
-  const routes = guestRoutes;
+  const { user } = useContext(UserContext);
+  const routes = guestRoutes.filter((route) => {
+    if (!route.requiredRole) {
+      return true;
+    }
+    return route.requiredRole === user?.role;
+  });
 
   return (
     <div className="flex flex-col w-full">

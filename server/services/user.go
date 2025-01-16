@@ -43,7 +43,7 @@ func NewUserService(di *internal.Di) (UserService, error) {
 }
 
 func (u *userService) CreateUser(ctx context.Context, payload models.CreateUserPayload, role models.Role) error {
-	user, err := u.userRepository.GetUserByEmail(ctx, payload.Email, role)
+	user, err := u.userRepository.GetUserByEmail(ctx, payload.Email, []models.Role{role})
 	if err != nil {
 		return fmt.Errorf("get user by email: %w", err)
 	}
@@ -86,11 +86,11 @@ func (u *userService) GetUser(ctx context.Context) (*models.UserResponse, error)
 	}
 
 	ttl := time.Duration(config.Env.Cache.CacheExp) * time.Minute
-	if err := u.cacheService.Set(ctx, getUserKey(session.UserID), userResponse, ttl); err != nil {
+	if err := u.cacheService.Set(ctx, getUserKey(session.UserID), user.ToUserResponse(), ttl); err != nil {
 		return nil, fmt.Errorf("set user to cache: %w", err)
 	}
 
-	return &userResponse, nil
+	return user.ToUserResponse(), nil
 }
 
 func getUserKey(userID uuid.UUID) string {

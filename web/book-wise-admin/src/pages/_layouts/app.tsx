@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/navbar";
 import { Sidebar } from "@/components/sidebar";
+import { UseProvider } from "@/contexts/user-context";
 import { api } from "@/lib/axios";
 import { isAxiosError } from "axios";
 import { useLayoutEffect } from "react";
@@ -31,16 +32,18 @@ export function AppLayout() {
   }, [navigate]);
 
   return (
-    <div className="h-full">
-      <div className="h-[80px] md:pl-56 fixed inset-y-0 w-full z-50">
-        <Navbar />
+    <UseProvider>
+      <div className="h-full">
+        <div className="h-[80px] md:pl-56 fixed inset-y-0 w-full z-50">
+          <Navbar />
+        </div>
+        <div className="hidden md:flex h-full w-56 flex-col fixed inset-y-0 z-50">
+          <Sidebar />
+        </div>
+        <main className="md:pl-60 md:py-28">
+          <Outlet />
+        </main>
       </div>
-      <div className="hidden md:flex h-full w-56 flex-col fixed inset-y-0 z-50">
-        <Sidebar />
-      </div>
-      <main className="md:pl-60 md:py-28">
-        <Outlet />
-      </main>
-    </div>
+    </UseProvider>
   );
 }

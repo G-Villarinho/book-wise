@@ -87,6 +87,10 @@ func (s *sessionService) GetSessionByToken(ctx context.Context, token string) (*
 		return nil, err
 	}
 
+	if session == nil {
+		return nil, models.ErrSessionNotFound
+	}
+
 	if session.Token != token {
 		return nil, models.ErrSessionNotFound
 	}
@@ -166,7 +170,7 @@ func (s *sessionService) DeleteAllSessions(ctx context.Context, userID uuid.UUID
 }
 
 func (s *sessionService) getSession(ctx context.Context, sessionID uuid.UUID) (*models.Session, error) {
-	var session *models.Session
+	var session models.Session
 	if err := s.cacheService.Get(ctx, getSessionKey(sessionID), &session); err != nil {
 		if errors.Is(err, cache.ErrCacheMiss) {
 			return nil, nil
@@ -175,7 +179,7 @@ func (s *sessionService) getSession(ctx context.Context, sessionID uuid.UUID) (*
 		return nil, err
 	}
 
-	return session, nil
+	return &session, nil
 }
 
 func getSessionKey(sessionID uuid.UUID) string {
