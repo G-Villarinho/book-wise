@@ -13,6 +13,7 @@ export function CreateBook() {
     queryKey: ["create-book", externalBookId || ""],
     queryFn: () => getExternalBookById(externalBookId!),
     enabled: !!externalBookId,
+    staleTime: 1000 * 60 * 15,
   });
 
   return (

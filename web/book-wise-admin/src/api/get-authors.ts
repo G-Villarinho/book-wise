@@ -3,6 +3,7 @@ import { api } from "@/lib/axios";
 
 export interface GetAuthorsQuery {
   page?: number | null;
+  limit?: number | null;
   fullName?: string | null;
   authorId?: string | null;
 }
@@ -18,6 +19,7 @@ export interface AuthorDetailsResponse {
 
 export async function getAuthors({
   page,
+  limit,
   fullName,
   authorId,
 }: GetAuthorsQuery) {
@@ -26,6 +28,7 @@ export async function getAuthors({
     {
       params: {
         page,
+        limit,
         fullName,
         authorId,
       },

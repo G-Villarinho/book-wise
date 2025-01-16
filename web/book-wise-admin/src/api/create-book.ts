@@ -5,7 +5,7 @@ interface CreateBookPayload {
   title: string;
   description: string;
   coverImageURL: string;
-  authors: string[];
+  authorsIds: string[];
   categories: string[];
 }
 
@@ -14,7 +14,7 @@ export async function CreateBook({
   title,
   description,
   coverImageURL,
-  authors,
+  authorsIds,
   categories,
 }: CreateBookPayload) {
   await api.post("books", {
@@ -22,7 +22,7 @@ export async function CreateBook({
     title,
     description,
     coverImageURL,
-    authors,
+    authorsIds,
     categories,
   });
 }

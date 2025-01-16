@@ -5,12 +5,20 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle, Trash2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { SearchBookResponse } from "@/@types/search-book-response";
 import { useMutation } from "@tanstack/react-query";
 import { CreateBook } from "@/api/create-book";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { SelectAuthor } from "./select-author";
+import { Author } from "@/@types/author";
+import { AuthorChip } from "./author-chip";
+
+interface CreateBookFormProps {
+  book: SearchBookResponse;
+}
 
 const bookSchema = z.object({
   title: z.string().min(1, { message: "Título é obrigatório" }),
@@ -19,27 +27,23 @@ const bookSchema = z.object({
       invalid_type_error: "Total de páginas deve ser um número válido",
     })
     .min(1, { message: "Total de páginas deve ser maior que 0" }),
-  description: z.string(),
-  coverImageURL: z.string().url(),
-  authors: z.array(
-    z.object({
-      name: z.string().min(1, { message: "Nome do autor é obrigatório" }),
-    })
-  ),
+  description: z.string().min(1, { message: "Descrição é obrigatória" }),
+  coverImageURL: z.string().url({ message: "URL da capa deve ser válida" }),
   categories: z.array(
     z.object({
-      name: z.string().min(1, { message: "Categoria é obrigatório" }),
+      name: z.string().min(1, { message: "Categoria é obrigatória" }),
     })
   ),
+  authors: z
+    .array(z.object({ id: z.string().min(1) }))
+    .min(1, { message: "Pelo menos um autor deve ser selecionado" }),
 });
 
 export type BookSchemaData = z.infer<typeof bookSchema>;
 
-interface CreateBookFormProps {
-  book: SearchBookResponse;
-}
-
 export function CreateBookForm({ book }: CreateBookFormProps) {
+  const [isSelectAuthorsOpen, setIsSelectAuthorsOpen] = useState(false);
+  const [selectedAuthors, setSelectedAuthors] = useState<Author[]>([]);
   const navigate = useNavigate();
 
   const {
@@ -50,15 +54,6 @@ export function CreateBookForm({ book }: CreateBookFormProps) {
     formState: { errors },
   } = useForm<BookSchemaData>({
     resolver: zodResolver(bookSchema),
-  });
-
-  const {
-    fields: authorsFields,
-    append: appendAuthor,
-    remove: removeAuthor,
-  } = useFieldArray({
-    control,
-    name: "authors",
   });
 
   const {
@@ -77,17 +72,17 @@ export function CreateBookForm({ book }: CreateBookFormProps) {
         totalPages: book.totalPages,
         description: book.description,
         coverImageURL: book.coverImageURL,
-        authors: book.authors.map((author) => ({ name: author })),
         categories: book.categories.map((category) => ({ name: category })),
+        authors: selectedAuthors,
       });
     }
-  }, [book, reset]);
+  }, [book, reset, selectedAuthors]);
 
   const { mutateAsync: createBook } = useMutation({
     mutationFn: CreateBook,
   });
 
-  const onSubmit = async (data: BookSchemaData) => {
+  const handleCreateBook = async (data: BookSchemaData) => {
     const uniqueCategories = new Set(
       data.categories.map((category) => category.name)
     );
@@ -103,17 +98,23 @@ export function CreateBookForm({ book }: CreateBookFormProps) {
       title: data.title,
       description: data.description,
       coverImageURL: data.coverImageURL,
-      authors: data.authors.map((author) => author.name),
+      authorsIds: selectedAuthors.map((author) => author.id),
       categories: data.categories.map((category) => category.name),
     });
 
     toast.success("Livro criado com sucesso!");
-    navigate("/catalog");
+    navigate("/library");
+  };
+
+  const handleRemoveAuthor = (authorId: string) => {
+    setSelectedAuthors((prev) =>
+      prev.filter((author) => author.id !== authorId)
+    );
   };
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(handleCreateBook)}
       className="mt-8 grid grid-cols-2 gap-4 px-12"
     >
       <div className="flex flex-col gap-1">
@@ -163,63 +164,36 @@ export function CreateBookForm({ book }: CreateBookFormProps) {
       </div>
 
       <div className="flex flex-col gap-1 col-span-2">
-        <label>URL da Capa</label>
-        <Input
-          {...register("coverImageURL")}
-          placeholder="URL da imagem da capa"
-          className={`border p-2 ${
-            errors.coverImageURL ? "border-red-500" : ""
-          }`}
-          disabled
-        />
-        {errors.coverImageURL && (
-          <p className="text-sm text-red-500 mt-1">
-            {errors.coverImageURL.message}
-          </p>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-1 col-span-2">
         <label>Autores</label>
-        {authorsFields.map((field, index) => (
-          <div key={field.id} className="mb-4">
-            <div className="flex gap-2">
-              <Input
-                {...register(`authors.${index}.name` as const)}
-                defaultValue={field.name}
-                placeholder="Nome do autor"
-                className={`border p-2 w-full ${
-                  errors.authors?.[index]?.name ? "border-red-500" : ""
-                }`}
-              />
-              {authorsFields.length > 1 && (
-                <Button
-                  className="font-semibold"
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => removeAuthor(index)}
-                >
-                  <Trash2 />
-                </Button>
-              )}
-            </div>
-            {errors.authors?.[index]?.name && (
-              <p className="text-sm text-red-500 mt-1">
-                {errors.authors[index].name?.message}
-              </p>
-            )}
-          </div>
-        ))}
-        <Button
-          type="button"
-          variant="outline"
-          className="font-medium"
-          onClick={() => appendAuthor({ name: "" })}
+        <div className="flex flex-wrap gap-2 mb-2">
+          {selectedAuthors.map((author) => (
+            <AuthorChip
+              key={author.id}
+              author={author}
+              onRemove={() => handleRemoveAuthor(author.id)}
+            />
+          ))}
+        </div>
+        <Dialog
+          onOpenChange={setIsSelectAuthorsOpen}
+          open={isSelectAuthorsOpen}
         >
-          <PlusCircle size={22} />
-          Adicionar Autor
-        </Button>
+          <DialogTrigger asChild>
+            <Button type="button" variant="outline" className="font-medium">
+              <PlusCircle size={22} />
+              Adicionar Autor
+            </Button>
+          </DialogTrigger>
+          <SelectAuthor
+            open={isSelectAuthorsOpen}
+            selectedAuthors={selectedAuthors}
+            onAuthorsChange={setSelectedAuthors}
+            onClose={() => setIsSelectAuthorsOpen(false)}
+          />
+        </Dialog>
+        {errors.authors && (
+          <p className="text-sm text-red-500 mt-1">{errors.authors.message}</p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1 col-span-2">
