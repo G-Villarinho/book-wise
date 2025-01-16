@@ -154,7 +154,7 @@ export function LibraryTableCellActions({
           )}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleUpdateBook}>
-          <FilePen /> Edit
+          <FilePen /> Editar
         </DropdownMenuItem>
         <AlertDialog>
           <AlertDialogTrigger asChild>
@@ -163,7 +163,7 @@ export function LibraryTableCellActions({
                 e.preventDefault();
               }}
             >
-              <Trash /> Remove
+              <Trash /> Deletar
             </DropdownMenuItem>
           </AlertDialogTrigger>
           <AlertDialogContent>

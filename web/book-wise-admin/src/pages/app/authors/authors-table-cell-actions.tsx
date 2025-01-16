@@ -69,7 +69,7 @@ export function AuthorsTabelCellActions({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={handleUpdateAuthor}>
-          <FilePen /> Edit
+          <FilePen /> Editar
         </DropdownMenuItem>
         <AlertDialog>
           <AlertDialogTrigger asChild>
@@ -78,7 +78,7 @@ export function AuthorsTabelCellActions({
                 e.preventDefault();
               }}
             >
-              <Trash /> Remove
+              <Trash /> Deletar
             </DropdownMenuItem>
           </AlertDialogTrigger>
           <AlertDialogContent>
