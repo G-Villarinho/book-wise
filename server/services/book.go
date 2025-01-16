@@ -25,8 +25,8 @@ type BookService interface {
 type bookService struct {
 	di               *internal.Di
 	googleBookClient clients.GoogleBookClient
-	authorService    AuthorService
 	categoryService  CategoryService
+	authorRepository repositories.AuthorRepository
 	bookRepository   repositories.BookRepository
 }
 
@@ -36,12 +36,12 @@ func NewBookService(di *internal.Di) (BookService, error) {
 		return nil, err
 	}
 
-	authorService, err := internal.Invoke[AuthorService](di)
+	categoryService, err := internal.Invoke[CategoryService](di)
 	if err != nil {
 		return nil, err
 	}
 
-	categoryService, err := internal.Invoke[CategoryService](di)
+	authorRepository, err := internal.Invoke[repositories.AuthorRepository](di)
 	if err != nil {
 		return nil, err
 	}
@@ -54,16 +54,24 @@ func NewBookService(di *internal.Di) (BookService, error) {
 	return &bookService{
 		di:               di,
 		googleBookClient: googleBookClient,
-		authorService:    authorService,
+		authorRepository: authorRepository,
 		categoryService:  categoryService,
 		bookRepository:   bookRepository,
 	}, nil
 }
 
 func (b *bookService) CreateBook(ctx context.Context, payload models.CreateBookPayload) (*models.BookResponse, error) {
-	authors, err := b.authorService.FindOrCreateAuthors(ctx, payload.Authors)
+	authors, err := b.authorRepository.GetAuthorsByID(ctx, payload.AuthorsIds)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get authors by ids: %w", err)
+	}
+
+	if authors == nil {
+		return nil, models.ErrAuthorsNotFound
+	}
+
+	if len(authors) != len(payload.AuthorsIds) {
+		return nil, models.ErrAuthorsMismatch
 	}
 
 	categories, err := b.categoryService.FindOrCreateCategories(ctx, payload.Categories)
@@ -73,20 +81,11 @@ func (b *bookService) CreateBook(ctx context.Context, payload models.CreateBookP
 
 	book := payload.ToBook(authors, categories)
 
-	createdBook, err := b.bookRepository.CreateBook(ctx, book)
-	if err != nil {
-		return nil, err
+	if err := b.bookRepository.CreateBook(ctx, book); err != nil {
+		return nil, fmt.Errorf("create book: %w", err)
 	}
 
-	return &models.BookResponse{
-		TotalPages:       createdBook.TotalPages,
-		TotalEvaluations: createdBook.TotalEvaluations,
-		Title:            createdBook.Title,
-		Description:      createdBook.Description,
-		CoverImageURL:    createdBook.CoverImageURL,
-		Authors:          payload.Authors,
-		Categories:       payload.Categories,
-	}, nil
+	return book.ToBookResponse(), nil
 }
 
 func (b *bookService) SearchExternalBook(ctx context.Context, query string, page int) ([]models.BookSearchResponse, error) {

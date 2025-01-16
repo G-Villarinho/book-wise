@@ -12,7 +12,7 @@ import (
 )
 
 type BookRepository interface {
-	CreateBook(ctx context.Context, book *models.Book) (*models.Book, error)
+	CreateBook(ctx context.Context, book *models.Book) error
 	GetBookByID(ctx context.Context, ID uuid.UUID, preload bool) (*models.Book, error)
 	GetPaginatedBooks(ctx context.Context, pagination *models.BookPagination) (*models.PaginatedResponse[models.Book], error)
 	DeleteBookByID(ctx context.Context, ID uuid.UUID) error
@@ -37,7 +37,7 @@ func NewBookRepository(di *internal.Di) (BookRepository, error) {
 	}, nil
 }
 
-func (r *bookRepository) CreateBook(ctx context.Context, book *models.Book) (*models.Book, error) {
+func (r *bookRepository) CreateBook(ctx context.Context, book *models.Book) error {
 	err := r.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(book).Error; err != nil {
 			return err
@@ -59,10 +59,10 @@ func (r *bookRepository) CreateBook(ctx context.Context, book *models.Book) (*mo
 	})
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return book, nil
+	return nil
 }
 
 func (r *bookRepository) GetBookByID(ctx context.Context, ID uuid.UUID, preload bool) (*models.Book, error) {

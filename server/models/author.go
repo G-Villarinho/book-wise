@@ -13,6 +13,7 @@ import (
 var (
 	ErrAuthorsNotFound = errors.New("no authors found in database")
 	ErrAuthorNotFound  = errors.New("no author found in database")
+	ErrAuthorsMismatch = errors.New("authors mismatch: not all provided authors were found")
 )
 
 type Author struct {

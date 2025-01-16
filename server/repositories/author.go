@@ -19,6 +19,7 @@ type AuthorRepository interface {
 	GetPaginatedAuthors(ctx context.Context, pagination *models.AuthorPagination) (*models.PaginatedResponse[models.Author], error)
 	DeleteAuthorByID(ctx context.Context, ID uuid.UUID) error
 	GetAuthorByID(ctx context.Context, ID uuid.UUID) (*models.Author, error)
+	GetAuthorsByID(ctx context.Context, IDs []uuid.UUID) ([]models.Author, error)
 }
 
 type authorRepository struct {
@@ -118,4 +119,18 @@ func (a *authorRepository) GetAuthorByID(ctx context.Context, ID uuid.UUID) (*mo
 	}
 
 	return &author, nil
+}
+
+func (a *authorRepository) GetAuthorsByID(ctx context.Context, IDs []uuid.UUID) ([]models.Author, error) {
+	var authors []models.Author
+
+	if err := a.DB.WithContext(ctx).Where("Id IN ?", IDs).Find(&authors).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return authors, nil
 }
