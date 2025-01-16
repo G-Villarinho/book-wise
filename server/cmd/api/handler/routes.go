@@ -5,6 +5,7 @@ import (
 
 	"github.com/G-Villarinho/book-wise-api/internal"
 	"github.com/G-Villarinho/book-wise-api/middleware"
+	"github.com/G-Villarinho/book-wise-api/models"
 	"github.com/labstack/echo/v4"
 )
 
@@ -48,14 +49,14 @@ func setupBookRoutes(e *echo.Echo, di *internal.Di) {
 
 	group := e.Group("/v1/books", middleware.EnsureAuthenticated(di))
 
-	group.POST("", bookHandler.CreateBook)
-	group.GET("/external/search", bookHandler.SearchExternalBooks)
-	group.GET("/external/:externalId", bookHandler.GetExternalBookByID)
-	group.GET("/:id", bookHandler.GetBook)
-	group.GET("", bookHandler.GetBooks)
-	group.DELETE("/:id", bookHandler.DeleteBook)
-	group.PATCH("/:id/publish", bookHandler.PublishBook)
-	group.PATCH("/:id/unpublish", bookHandler.UnpublishBook)
+	group.POST("", bookHandler.CreateBook, middleware.EnsurePermission(models.CreateBookPermission))
+	group.GET("/external/search", bookHandler.SearchExternalBooks, middleware.EnsurePermission(models.ListExternalBooksPermission))
+	group.GET("/external/:externalId", bookHandler.GetExternalBookByID, middleware.EnsurePermission(models.GetExternalBooksPermission))
+	group.GET("/:id", bookHandler.GetBook, middleware.EnsurePermission(models.GetBookPermission))
+	group.GET("", bookHandler.GetBooks, middleware.EnsurePermission(models.ListBooksPermission))
+	group.DELETE("/:id", bookHandler.DeleteBook, middleware.EnsurePermission(models.DeleteBookPermission))
+	group.PATCH("/:id/publish", bookHandler.PublishBook, middleware.EnsurePermission(models.PublishBookPermission))
+	group.PATCH("/:id/unpublish", bookHandler.UnpublishBook, middleware.EnsurePermission(models.UnpublishBookPermission))
 }
 
 func setupCategoryRoutes(e *echo.Echo, di *internal.Di) {
@@ -77,8 +78,8 @@ func setupAuthorHandler(e *echo.Echo, di *internal.Di) {
 
 	group := e.Group("/v1/authors", middleware.EnsureAuthenticated(di))
 
-	group.GET("/lite", authorHandler.GetAuthorsBasicInfos)
-	group.GET("", authorHandler.GetAuthors)
-	group.POST("", authorHandler.CreateAuthor)
-	group.DELETE("/:id", authorHandler.DeleteAuthor)
+	group.GET("/lite", authorHandler.GetAuthorsBasicInfos, middleware.EnsurePermission(models.ListAuthorsPermission))
+	group.GET("", authorHandler.GetAuthors, middleware.EnsurePermission(models.ListAuthorsPermission))
+	group.POST("", authorHandler.CreateAuthor, middleware.EnsurePermission(models.CreateAuthorPermission))
+	group.DELETE("/:id", authorHandler.DeleteAuthor, middleware.EnsurePermission(models.DeleteAuthorPermission))
 }
