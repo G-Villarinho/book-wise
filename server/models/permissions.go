@@ -3,6 +3,7 @@ package models
 type Permission string
 
 const (
+	AllPermissions              Permission = "all_permissions"
 	CreateAdminPermission       Permission = "create_admin"
 	ListExternalBooksPermission Permission = "list_external_books"
 	GetExternalBooksPermission  Permission = "get_external_book"
@@ -20,8 +21,10 @@ const (
 )
 
 var rolePermissions = map[Role][]Permission{
+	Owner: {
+		AllPermissions,
+	},
 	Admin: {
-		CreateAdminPermission,
 		ListExternalBooksPermission,
 		GetExternalBooksPermission,
 		CreateAuthorPermission,
@@ -40,6 +43,10 @@ var rolePermissions = map[Role][]Permission{
 }
 
 func CheckPermission(role Role, permission Permission) bool {
+	if role == Owner {
+		return true
+	}
+
 	permissions, exists := rolePermissions[role]
 	if !exists {
 		return false

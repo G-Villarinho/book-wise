@@ -17,6 +17,7 @@ import (
 type UserHandler interface {
 	CreateMember(ctx echo.Context) error
 	CreateAdmin(ctx echo.Context) error
+	GetUser(ctx echo.Context) error
 }
 
 type userHandler struct {
@@ -106,4 +107,29 @@ func (u *userHandler) CreateAdmin(ctx echo.Context) error {
 	}
 
 	return ctx.NoContent(http.StatusCreated)
+}
+
+func (u *userHandler) GetUser(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "user"),
+		slog.String("func", "GetUser"),
+	)
+
+	response, err := u.userService.GetUser(ctx.Request().Context())
+	if err != nil {
+		log.Error(err.Error())
+
+		if errors.Is(err, models.ErrUserNotFound) {
+			return responses.AccessDeniedAPIErrorResponse(ctx)
+		}
+
+		if errors.Is(err, models.ErrUserNotFoundInContext) {
+			return responses.AccessDeniedAPIErrorResponse(ctx)
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.JSON(http.StatusOK, response)
+
 }

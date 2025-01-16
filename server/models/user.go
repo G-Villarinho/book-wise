@@ -23,6 +23,7 @@ const (
 )
 
 const (
+	Owner  Role = "owner"
 	Member Role = "member"
 	Admin  Role = "admin"
 )
@@ -32,7 +33,7 @@ type User struct {
 	FullName string         `gorm:"column:FullName;type:varchar(255);not null"`
 	Email    string         `gorm:"column:Email;type:varchar(255);not null;unique"`
 	Status   Status         `gorm:"column:Status;type:enum('active', 'blocked');not null;default:'active'"`
-	Role     Role           `gorm:"column:Role;type:enum('member', 'admin');not null;default:'member';index"`
+	Role     Role           `gorm:"column:Role;type:enum('member', 'admin', 'owner');not null;default:'member';index"`
 	Avatar   sql.NullString `gorm:"column:Avatar;type:varchar(255)"`
 }
 
@@ -49,6 +50,7 @@ type UserResponse struct {
 	ID       string `json:"id"`
 	FullName string `json:"full_name"`
 	Email    string `json:"email"`
+	Role     string `json:"role"`
 	Avatar   string `json:"avatar,omitempty"`
 }
 
@@ -62,5 +64,15 @@ func (cup *CreateUserPayload) ToUser(role Role) *User {
 		FullName: cup.FullName,
 		Email:    cup.Email,
 		Role:     role,
+	}
+}
+
+func (u *User) ToUserResponse() *UserResponse {
+	return &UserResponse{
+		ID:       u.ID.String(),
+		FullName: u.FullName,
+		Email:    u.Email,
+		Role:     string(u.Role),
+		Avatar:   u.Avatar.String,
 	}
 }

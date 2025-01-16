@@ -27,6 +27,7 @@ func setupUserRoutes(e *echo.Echo, di *internal.Di) {
 
 	group.POST("/member", userHandler.CreateMember)
 	group.POST("/admin", userHandler.CreateAdmin, middleware.EnsureAuthenticated(di), middleware.EnsurePermission(models.CreateAdminPermission))
+	group.GET("/me", userHandler.GetUser, middleware.EnsureAuthenticated(di))
 }
 
 func setupAuthRoutes(e *echo.Echo, di *internal.Di) {

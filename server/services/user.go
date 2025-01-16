@@ -3,15 +3,19 @@ package services
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/G-Villarinho/book-wise-api/cache"
+	"github.com/G-Villarinho/book-wise-api/config"
 	"github.com/G-Villarinho/book-wise-api/internal"
 	"github.com/G-Villarinho/book-wise-api/models"
 	"github.com/G-Villarinho/book-wise-api/repositories"
+	"github.com/google/uuid"
 )
 
 type UserService interface {
 	CreateUser(ctx context.Context, payload models.CreateUserPayload, role models.Role) error
+	GetUser(ctx context.Context) (*models.UserResponse, error)
 }
 
 type userService struct {
@@ -54,4 +58,41 @@ func (u *userService) CreateUser(ctx context.Context, payload models.CreateUserP
 	}
 
 	return nil
+}
+
+func (u *userService) GetUser(ctx context.Context) (*models.UserResponse, error) {
+	session, ok := ctx.Value(internal.SessionKey).(models.Session)
+	if !ok {
+		return nil, models.ErrUserNotFoundInContext
+	}
+
+	var userResponse models.UserResponse
+	err := u.cacheService.Get(ctx, getUserKey(session.UserID), &userResponse)
+	if err == nil {
+		return &userResponse, nil
+	}
+
+	if err != cache.ErrCacheMiss {
+		return nil, fmt.Errorf("get user from cache: %w", err)
+	}
+
+	user, err := u.userRepository.GetUserByID(ctx, session.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("get user by id: %w", err)
+	}
+
+	if user == nil {
+		return nil, models.ErrUserNotFound
+	}
+
+	ttl := time.Duration(config.Env.Cache.CacheExp) * time.Minute
+	if err := u.cacheService.Set(ctx, getUserKey(session.UserID), userResponse, ttl); err != nil {
+		return nil, fmt.Errorf("set user to cache: %w", err)
+	}
+
+	return &userResponse, nil
+}
+
+func getUserKey(userID uuid.UUID) string {
+	return fmt.Sprintf("user:%s", userID.String())
 }
