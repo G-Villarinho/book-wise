@@ -24,9 +24,9 @@ export function Library() {
   const authorId = searchParams.get("authorId");
   const categoryId = searchParams.get("categoryId");
 
-  const page = z
-    .string()
-    .transform(Number)
+  const page = z.coerce
+    .number()
+    .transform((page) => page)
     .parse(searchParams.get("page") ?? "1");
 
   const { data: result } = useQuery({

@@ -146,7 +146,6 @@ func (u *userHandler) GetAdmins(ctx echo.Context) error {
 		ctx.QueryParam("limit"),
 		ctx.QueryParam("sort"),
 		ctx.QueryParam("fullName"),
-		ctx.QueryParam("email"),
 		ctx.QueryParam("status"),
 	)
 	if err != nil {

@@ -27,7 +27,7 @@ export function Pagination({
 
       <div className="flex items-center space-x-6 lg:space-x-8">
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-          Página {page} de {totalPages}
+          Página {total === 0 ? page - 1 : page} de {totalPages}
         </div>
         <div className="flex items-center space-x-2">
           <Button

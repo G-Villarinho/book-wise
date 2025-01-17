@@ -47,7 +47,6 @@ func (u *User) TableName() string {
 type UserPagination struct {
 	Pagination
 	FullName *string `json:"fullName"`
-	Email    *string `json:"email"`
 	Status   *string `json:"status"`
 }
 
@@ -109,7 +108,7 @@ func (u *User) ToAdminDetailsResponse() *AdminDetailsResponse {
 	}
 }
 
-func NewUserPagination(page, limit, sort, title, email, status string) (*UserPagination, error) {
+func NewUserPagination(page, limit, sort, fullName, status string) (*UserPagination, error) {
 	pagination, err := NewPagination(page, limit, sort)
 	if err != nil {
 		return nil, err
@@ -117,8 +116,7 @@ func NewUserPagination(page, limit, sort, title, email, status string) (*UserPag
 
 	bookPagination := &UserPagination{
 		Pagination: *pagination,
-		FullName:   utils.GetQueryStringPointer(title),
-		Email:      utils.GetQueryStringPointer(email),
+		FullName:   utils.GetQueryStringPointer(fullName),
 	}
 
 	if strings.ToLower(status) == "all" {

@@ -73,10 +73,10 @@ export function Authors() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[50px] text-center"></TableHead>
-                  <TableHead className="w-[110px]">Identificador</TableHead>
                   <TableHead className="w-[150px]">Nome completo</TableHead>
+                  <TableHead className="w-[150px]">E-mail</TableHead>
                   <TableHead className="w-[100px]">Criado há</TableHead>
-                  <TableHead className="w-[100px]">Nacionalidade</TableHead>
+                  <TableHead className="w-[100px]">Status</TableHead>
                   <TableHead className="w-[75px] text-center"></TableHead>
                 </TableRow>
               </TableHeader>

@@ -8,7 +8,7 @@ interface HeaderProps {
 
 export function Header({ title, subtitle, children }: HeaderProps) {
   return (
-    <header>
+    <header className="mb-4">
       <div className="flex justify-between">
         <div className="flex flex-col">
           <h1 className="font-bold text-4xl">{title}</h1>

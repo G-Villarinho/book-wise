@@ -69,14 +69,11 @@ func (u *userRepository) GetUserByID(ctx context.Context, ID uuid.UUID) (*models
 
 func (u *userRepository) GetPaginatedUsersByRole(ctx context.Context, role models.Role, pagination *models.UserPagination) (*models.PaginatedResponse[models.User], error) {
 	query := u.DB.WithContext(ctx).
+		Where("Users.Role = ?", role).
 		Model(&models.User{})
 
 	if pagination.FullName != nil {
 		query = query.Where("Users.FullName LIKE ?", fmt.Sprintf("%%%s%%", *pagination.FullName))
-	}
-
-	if pagination.Email != nil {
-		query = query.Where("Users.Email LIKE ?", fmt.Sprintf("%%%s%%", *pagination.Email))
 	}
 
 	if pagination.Status != nil {
