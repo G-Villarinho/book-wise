@@ -1,7 +1,7 @@
 import { BookMarked, Compass, Layout, LibraryBig, Shield } from "lucide-react";
 import { SidebarItem } from "./sidebar-item";
 import { useContext } from "react";
-import { UserContext } from "@/contexts/user-context";
+import { UserContext } from "@/contexts/user/user-context";
 
 const guestRoutes = [
   {

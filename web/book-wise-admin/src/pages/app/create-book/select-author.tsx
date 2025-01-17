@@ -100,7 +100,7 @@ export function SelectAuthor({
   }
 
   function handleCreateAuthor() {
-    navigate("/authors/new"); // Redireciona para a página de criação de autor
+    navigate("/authors/new");
   }
 
   return (

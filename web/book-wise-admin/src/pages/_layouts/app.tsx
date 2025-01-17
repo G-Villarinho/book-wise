@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/navbar";
 import { Sidebar } from "@/components/sidebar";
-import { UseProvider } from "@/contexts/user-context";
+import { UseProvider } from "@/contexts/user/user-provider";
 import { api } from "@/lib/axios";
 import { isAxiosError } from "axios";
 import { useLayoutEffect } from "react";
