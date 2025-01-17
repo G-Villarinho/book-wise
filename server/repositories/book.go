@@ -116,7 +116,6 @@ func (r *bookRepository) GetPaginatedBooks(ctx context.Context, pagination *mode
 	}
 
 	return orders, nil
-
 }
 
 func (r *bookRepository) DeleteBookByID(ctx context.Context, ID uuid.UUID) error {

@@ -3,7 +3,10 @@ package models
 import (
 	"database/sql"
 	"errors"
+	"strings"
+	"time"
 
+	"github.com/G-Villarinho/book-wise-api/utils"
 	"github.com/google/uuid"
 )
 
@@ -41,6 +44,13 @@ func (u *User) TableName() string {
 	return "Users"
 }
 
+type UserPagination struct {
+	Pagination
+	FullName *string `json:"fullName"`
+	Email    *string `json:"email"`
+	Status   *string `json:"status"`
+}
+
 type CreateUserPayload struct {
 	FullName string `json:"fullName" validate:"required,max=255"`
 	Email    string `json:"email" validate:"required,email,max=255"`
@@ -48,10 +58,20 @@ type CreateUserPayload struct {
 
 type UserResponse struct {
 	ID       string `json:"id"`
-	FullName string `json:"full_name"`
+	FullName string `json:"fullName"`
 	Email    string `json:"email"`
 	Role     string `json:"role"`
 	Avatar   string `json:"avatar,omitempty"`
+}
+
+type AdminDetailsResponse struct {
+	ID        string    `json:"id"`
+	FullName  string    `json:"fullName"`
+	Email     string    `json:"email"`
+	Role      string    `json:"role"`
+	Status    string    `json:"status"`
+	Avatar    string    `json:"avatar,omitempty"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 func (cup *CreateUserPayload) ToUser(role Role) *User {
@@ -75,4 +95,37 @@ func (u *User) ToUserResponse() *UserResponse {
 		Role:     string(u.Role),
 		Avatar:   u.Avatar.String,
 	}
+}
+
+func (u *User) ToAdminDetailsResponse() *AdminDetailsResponse {
+	return &AdminDetailsResponse{
+		ID:        u.ID.String(),
+		FullName:  u.FullName,
+		Email:     u.Email,
+		Role:      string(u.Role),
+		Status:    string(u.Status),
+		Avatar:    u.Avatar.String,
+		CreatedAt: u.CreatedAt,
+	}
+}
+
+func NewUserPagination(page, limit, sort, title, email, status string) (*UserPagination, error) {
+	pagination, err := NewPagination(page, limit, sort)
+	if err != nil {
+		return nil, err
+	}
+
+	bookPagination := &UserPagination{
+		Pagination: *pagination,
+		FullName:   utils.GetQueryStringPointer(title),
+		Email:      utils.GetQueryStringPointer(email),
+	}
+
+	if strings.ToLower(status) == "all" {
+		bookPagination.Status = nil
+	} else {
+		bookPagination.Status = utils.GetQueryStringPointer(status)
+	}
+
+	return bookPagination, nil
 }

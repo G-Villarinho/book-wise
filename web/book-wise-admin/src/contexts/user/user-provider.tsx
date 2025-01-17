@@ -8,14 +8,14 @@ interface UserProviderProps {
 }
 
 export function UseProvider({ children }: UserProviderProps) {
-  const { data: result } = useQuery({
+  const { data: result, isFetching } = useQuery({
     queryKey: ["user"],
     queryFn: getUser,
     staleTime: 1000 * 60 * 15,
   });
 
   return (
-    <UserContext.Provider value={{ user: result }}>
+    <UserContext.Provider value={{ user: result, isFetchingUser: isFetching }}>
       {children}
     </UserContext.Provider>
   );

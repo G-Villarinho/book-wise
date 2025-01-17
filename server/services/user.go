@@ -16,6 +16,7 @@ import (
 type UserService interface {
 	CreateUser(ctx context.Context, payload models.CreateUserPayload, role models.Role) error
 	GetUser(ctx context.Context) (*models.UserResponse, error)
+	GetPaginatedAdmins(ctx context.Context, pagination *models.UserPagination) (*models.PaginatedResponse[*models.AdminDetailsResponse], error)
 }
 
 type userService struct {
@@ -91,6 +92,19 @@ func (u *userService) GetUser(ctx context.Context) (*models.UserResponse, error)
 	}
 
 	return user.ToUserResponse(), nil
+}
+
+func (u *userService) GetPaginatedAdmins(ctx context.Context, pagination *models.UserPagination) (*models.PaginatedResponse[*models.AdminDetailsResponse], error) {
+	pagiantedUsers, err := u.userRepository.GetPaginatedUsersByRole(ctx, models.Admin, pagination)
+	if err != nil {
+		return nil, fmt.Errorf("get paginated authors: %w", err)
+	}
+
+	paginatedAdminsResponse := models.MapPaginatedResult(pagiantedUsers, func(user models.User) *models.AdminDetailsResponse {
+		return user.ToAdminDetailsResponse()
+	})
+
+	return paginatedAdminsResponse, err
 }
 
 func getUserKey(userID uuid.UUID) string {

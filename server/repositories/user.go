@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/G-Villarinho/book-wise-api/internal"
 	"github.com/G-Villarinho/book-wise-api/models"
@@ -14,6 +15,7 @@ type UserRepository interface {
 	CreateUser(ctx context.Context, user models.User) error
 	GetUserByEmail(ctx context.Context, email string, roles []models.Role) (*models.User, error)
 	GetUserByID(ctx context.Context, ID uuid.UUID) (*models.User, error)
+	GetPaginatedUsersByRole(ctx context.Context, role models.Role, pagination *models.UserPagination) (*models.PaginatedResponse[models.User], error)
 }
 
 type userRepository struct {
@@ -63,4 +65,32 @@ func (u *userRepository) GetUserByID(ctx context.Context, ID uuid.UUID) (*models
 	}
 
 	return user, nil
+}
+
+func (u *userRepository) GetPaginatedUsersByRole(ctx context.Context, role models.Role, pagination *models.UserPagination) (*models.PaginatedResponse[models.User], error) {
+	query := u.DB.WithContext(ctx).
+		Model(&models.User{})
+
+	if pagination.FullName != nil {
+		query = query.Where("Users.FullName LIKE ?", fmt.Sprintf("%%%s%%", *pagination.FullName))
+	}
+
+	if pagination.Email != nil {
+		query = query.Where("Users.Email LIKE ?", fmt.Sprintf("%%%s%%", *pagination.Email))
+	}
+
+	if pagination.Status != nil {
+		query = query.Where("Users.Status = ?", *pagination.Status)
+	}
+
+	users, err := paginate[models.User](query, &pagination.Pagination, &models.User{})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return users, nil
 }

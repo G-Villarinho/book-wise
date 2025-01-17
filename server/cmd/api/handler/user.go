@@ -18,6 +18,7 @@ type UserHandler interface {
 	CreateMember(ctx echo.Context) error
 	CreateAdmin(ctx echo.Context) error
 	GetUser(ctx echo.Context) error
+	GetAdmins(ctx echo.Context) error
 }
 
 type userHandler struct {
@@ -132,4 +133,32 @@ func (u *userHandler) GetUser(ctx echo.Context) error {
 
 	return ctx.JSON(http.StatusOK, response)
 
+}
+
+func (u *userHandler) GetAdmins(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "books"),
+		slog.String("func", "GetBooks"),
+	)
+
+	userPagination, err := models.NewUserPagination(
+		ctx.QueryParam("page"),
+		ctx.QueryParam("limit"),
+		ctx.QueryParam("sort"),
+		ctx.QueryParam("fullName"),
+		ctx.QueryParam("email"),
+		ctx.QueryParam("status"),
+	)
+	if err != nil {
+		log.Error(err.Error())
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_pagination", "Parâmetros de buscas inválidos")
+	}
+
+	response, err := u.userService.GetPaginatedAdmins(ctx.Request().Context(), userPagination)
+	if err != nil {
+		log.Error(err.Error())
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.JSON(http.StatusOK, response)
 }

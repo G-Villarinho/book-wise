@@ -18,6 +18,7 @@ const (
 	DeleteBookPermission        Permission = "delete_book"
 	ListBooksPermission         Permission = "list_book"
 	GetBookPermission           Permission = "get_book"
+	ListAdmins                  Permission = "list_admins"
 )
 
 var rolePermissions = map[Role][]Permission{
