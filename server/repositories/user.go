@@ -16,6 +16,7 @@ type UserRepository interface {
 	GetUserByEmail(ctx context.Context, email string, roles []models.Role) (*models.User, error)
 	GetUserByID(ctx context.Context, ID uuid.UUID) (*models.User, error)
 	GetPaginatedUsersByRole(ctx context.Context, role models.Role, pagination *models.UserPagination) (*models.PaginatedResponse[models.User], error)
+	UpdateStatus(ctx context.Context, ID uuid.UUID, status models.Status) error
 }
 
 type userRepository struct {
@@ -90,4 +91,16 @@ func (u *userRepository) GetPaginatedUsersByRole(ctx context.Context, role model
 	}
 
 	return users, nil
+}
+
+func (u *userRepository) UpdateStatus(ctx context.Context, ID uuid.UUID, status models.Status) error {
+	if err := u.DB.
+		WithContext(ctx).
+		Model(&models.User{}).
+		Where("Id = ?", ID.String()).
+		UpdateColumn("Status", status).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

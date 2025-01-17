@@ -28,7 +28,8 @@ func setupUserRoutes(e *echo.Echo, di *internal.Di) {
 	group.POST("/member", userHandler.CreateMember)
 	group.POST("/admin", userHandler.CreateAdmin, middleware.EnsureAuthenticated(di), middleware.EnsurePermission(models.CreateAdminPermission))
 	group.GET("/me", userHandler.GetUser, middleware.EnsureAuthenticated(di))
-	group.GET("/admins", userHandler.GetAdmins, middleware.EnsureAuthenticated(di), middleware.EnsurePermission(models.ListAdmins))
+	group.GET("/admins", userHandler.GetAdmins, middleware.EnsureAuthenticated(di), middleware.EnsurePermission(models.ListAdminsPermission))
+	group.PATCH("/admin/block", userHandler.BlockAdmin, middleware.EnsureAuthenticated(di), middleware.EnsurePermission(models.BlockAdminPermission))
 }
 
 func setupAuthRoutes(e *echo.Echo, di *internal.Di) {

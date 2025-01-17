@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -17,16 +18,23 @@ type UserService interface {
 	CreateUser(ctx context.Context, payload models.CreateUserPayload, role models.Role) error
 	GetUser(ctx context.Context) (*models.UserResponse, error)
 	GetPaginatedAdmins(ctx context.Context, pagination *models.UserPagination) (*models.PaginatedResponse[*models.AdminDetailsResponse], error)
+	BlockAdminByID(ctx context.Context, adminID uuid.UUID) error
 }
 
 type userService struct {
 	di             *internal.Di
 	cacheService   cache.CacheService
+	sessionService SessionService
 	userRepository repositories.UserRepository
 }
 
 func NewUserService(di *internal.Di) (UserService, error) {
 	cacheService, err := internal.Invoke[cache.CacheService](di)
+	if err != nil {
+		return nil, err
+	}
+
+	sessionService, err := internal.Invoke[SessionService](di)
 	if err != nil {
 		return nil, err
 	}
@@ -39,6 +47,7 @@ func NewUserService(di *internal.Di) (UserService, error) {
 	return &userService{
 		di:             di,
 		cacheService:   cacheService,
+		sessionService: sessionService,
 		userRepository: userRepository,
 	}, nil
 }
@@ -105,6 +114,42 @@ func (u *userService) GetPaginatedAdmins(ctx context.Context, pagination *models
 	})
 
 	return paginatedAdminsResponse, err
+}
+
+func (u *userService) BlockAdminByID(ctx context.Context, adminID uuid.UUID) error {
+	session, ok := ctx.Value(internal.SessionKey).(models.Session)
+	if !ok {
+		return models.ErrUserNotFoundInContext
+	}
+
+	if session.UserID == adminID {
+		return models.ErrCannotBlockYourself
+	}
+
+	user, err := u.userRepository.GetUserByID(ctx, adminID)
+	if err != nil {
+		return fmt.Errorf("get user by id %q: %w", adminID, err)
+	}
+
+	if user == nil {
+		return models.ErrUserNotFound
+	}
+
+	if user.Status == models.Blocked {
+		return models.ErrUserAlredyBlocked
+	}
+
+	if err := u.userRepository.UpdateStatus(ctx, adminID, models.Blocked); err != nil {
+		return fmt.Errorf("update user status %q: %w", adminID, err)
+	}
+
+	if err := u.sessionService.DeleteAllSessions(ctx, adminID); err != nil {
+		if !errors.Is(err, models.ErrSessionNotFound) {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func getUserKey(userID uuid.UUID) string {

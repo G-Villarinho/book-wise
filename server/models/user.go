@@ -15,6 +15,8 @@ var (
 	ErrEmailAlreadyExists    = errors.New("email already exists in the database")
 	ErrUserNotFoundInContext = errors.New("user not found in the context")
 	ErrUserBlocked           = errors.New("user is blocked")
+	ErrCannotBlockYourself   = errors.New("the logged-in user's ID was provided as the target")
+	ErrUserAlredyBlocked     = errors.New("the provide user`s ID already blocked")
 )
 
 type Status string
@@ -53,6 +55,10 @@ type UserPagination struct {
 type CreateUserPayload struct {
 	FullName string `json:"fullName" validate:"required,max=255"`
 	Email    string `json:"email" validate:"required,email,max=255"`
+}
+
+type UpdateUserStatusPayload struct {
+	AdminID uuid.UUID `json:"adminId" validate:"required"`
 }
 
 type UserResponse struct {

@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/G-Villarinho/book-wise-api/cache"
@@ -134,11 +136,10 @@ func (s *sessionService) GetSessionsByUserID(ctx context.Context, userID uuid.UU
 func (s *sessionService) DeleteSession(ctx context.Context, sessionID uuid.UUID) error {
 	session, err := s.getSession(ctx, sessionID)
 	if err != nil {
+		if errors.Is(err, cache.ErrCacheMiss) {
+			return models.ErrSessionNotFound
+		}
 		return err
-	}
-
-	if session == nil {
-		return models.ErrSessionNotFound
 	}
 
 	if err := s.cacheService.Delete(ctx, getSessionKey(sessionID)); err != nil {
@@ -149,21 +150,34 @@ func (s *sessionService) DeleteSession(ctx context.Context, sessionID uuid.UUID)
 }
 
 func (s *sessionService) DeleteAllSessions(ctx context.Context, userID uuid.UUID) error {
+	log := slog.With(
+		slog.String("service", "session"),
+		slog.String("func", "DeleteAllSessions"),
+	)
+
 	var sessionIDs []string
 	if err := s.cacheService.GetSetMembers(ctx, getUserSessionsKey(userID), &sessionIDs); err != nil {
-		return err
-	}
+		if errors.Is(err, cache.ErrCacheMiss) {
+			return models.ErrSessionNotFound
+		}
 
-	if sessionIDs == nil {
-		return models.ErrSessionNotFound
+		return fmt.Errorf("retrieve session IDs %q: %w", userID, err)
 	}
 
 	for _, sessionIDStr := range sessionIDs {
 		sessionID, err := uuid.Parse(sessionIDStr)
 		if err != nil {
+			log.Error(err.Error())
 			continue
 		}
-		_ = s.DeleteSession(ctx, sessionID)
+
+		if err := s.DeleteSession(ctx, sessionID); err != nil {
+			if !errors.Is(err, models.ErrSessionNotFound) {
+				log.Error(err.Error())
+			}
+
+			continue
+		}
 	}
 
 	return s.cacheService.Delete(ctx, getUserSessionsKey(userID))

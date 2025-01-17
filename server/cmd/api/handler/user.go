@@ -19,6 +19,7 @@ type UserHandler interface {
 	CreateAdmin(ctx echo.Context) error
 	GetUser(ctx echo.Context) error
 	GetAdmins(ctx echo.Context) error
+	BlockAdmin(ctx echo.Context) error
 }
 
 type userHandler struct {
@@ -160,4 +161,51 @@ func (u *userHandler) GetAdmins(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, response)
+}
+
+func (u *userHandler) BlockAdmin(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "user"),
+		slog.String("func", "CreateAdmin"),
+	)
+
+	var payload models.UpdateUserStatusPayload
+	if err := jsoniter.NewDecoder(ctx.Request().Body).Decode(&payload); err != nil {
+		log.Warn("Error to decode JSON payload", slog.String("error", err.Error()))
+		return responses.CannotBindPayloadAPIErrorResponse(ctx)
+	}
+
+	validationErrors, err := validation.ValidateStruct(&payload)
+	if err != nil {
+		log.Warn(err.Error())
+		return responses.CannotBindPayloadAPIErrorResponse(ctx)
+	}
+
+	if validationErrors != nil {
+		log.Warn("Error to validate JSON payload")
+		return responses.NewValidationErrorResponse(ctx, validationErrors)
+	}
+
+	if err := u.userService.BlockAdminByID(ctx.Request().Context(), payload.AdminID); err != nil {
+		log.Error(err.Error())
+		if errors.Is(err, models.ErrUserNotFoundInContext) {
+			return responses.AccessDeniedAPIErrorResponse(ctx)
+		}
+
+		if errors.Is(err, models.ErrCannotBlockYourself) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusConflict, "Conflito", "Você não pode bloquear a si mesmo.")
+		}
+
+		if errors.Is(err, models.ErrUserNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Nenhum administrador encontrado para bloquear.")
+		}
+
+		if errors.Is(err, models.ErrUserAlredyBlocked) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusConflict, "Conflito", "O administrador em questão já apresenta status bloqueado.")
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.NoContent(http.StatusOK)
 }
