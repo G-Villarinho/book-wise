@@ -12,7 +12,8 @@ import { CreateAuthor } from "@/pages/app/create-author/create-author";
 import { Forbidden } from "@/pages/403";
 import { ProtectedRoute } from "./components/protected-router";
 import { Administrators } from "./pages/app/admins/admins";
-import { CreateAdministrator } from "./pages/app/create-administrator/create-administrator";
+import { CreateAdmin } from "./pages/app/create-admin/create-admin";
+import { UpdateAdmin } from "./pages/app/update-admin/update-admin";
 
 export const router = createBrowserRouter([
   {
@@ -56,7 +57,14 @@ export const router = createBrowserRouter([
       {
         path: "/",
         element: <ProtectedRoute requiredRole="owner" />,
-        children: [{ path: "/admins/new", element: <CreateAdministrator /> }],
+        children: [{ path: "/admins/new", element: <CreateAdmin /> }],
+      },
+      {
+        path: "/",
+        element: <ProtectedRoute requiredRole="owner" />,
+        children: [
+          { path: "/admins/update/:adminId", element: <UpdateAdmin /> },
+        ],
       },
     ],
   },

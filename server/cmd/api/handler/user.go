@@ -24,6 +24,7 @@ type UserHandler interface {
 	UnblockAdmin(ctx echo.Context) error
 	DeleteAdmin(ctx echo.Context) error
 	GetAdmin(ctx echo.Context) error
+	UpdateAdmin(ctx echo.Context) error
 }
 
 type userHandler struct {
@@ -324,4 +325,51 @@ func (u *userHandler) GetAdmin(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, response)
+}
+
+func (u *userHandler) UpdateAdmin(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "user"),
+		slog.String("func", "UpdateAdmin"),
+	)
+
+	var payload models.UpdateAdminPayload
+	if err := jsoniter.NewDecoder(ctx.Request().Body).Decode(&payload); err != nil {
+		log.Warn("Error to decode JSON payload", slog.String("error", err.Error()))
+		return responses.CannotBindPayloadAPIErrorResponse(ctx)
+	}
+
+	validationErrors, err := validation.ValidateStruct(&payload)
+	if err != nil {
+		log.Warn(err.Error())
+		return responses.CannotBindPayloadAPIErrorResponse(ctx)
+	}
+
+	if validationErrors != nil {
+		log.Warn("Error to validate JSON payload")
+		return responses.NewValidationErrorResponse(ctx, validationErrors)
+	}
+
+	if err := u.userService.UpdateAdmin(ctx.Request().Context(), payload); err != nil {
+		log.Error(err.Error())
+		if errors.Is(err, models.ErrUserNotFoundInContext) {
+			return responses.AccessDeniedAPIErrorResponse(ctx)
+		}
+
+		if errors.Is(err, models.ErrSameIDProvided) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusConflict, "conflict", "Você não pode obter informações sobre si mesmo neste contexto.")
+		}
+
+		if errors.Is(err, models.ErrUserNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Nenhum administrador encontrado.")
+		}
+
+		if errors.Is(err, models.ErrEmailAlreadyExists) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusConflict, "Conflito", "O e-mail informado já está em uso. Por favor, tente novamente com outro e-mail.")
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.NoContent(http.StatusNoContent)
 }

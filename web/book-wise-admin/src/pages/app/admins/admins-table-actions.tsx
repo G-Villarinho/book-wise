@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Ellipsis, FilePen, ShieldCheck, ShieldOff, Trash } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { PaginationResponse } from "@/@types/pagination-response";
 import { AdminDetailsResponse } from "@/api/get-admins";
@@ -36,6 +36,7 @@ export function AdminsTableActions({
   adminId,
   status,
 }: AdminsTableActionsProps) {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
 
@@ -122,6 +123,10 @@ export function AdminsTableActions({
     toast.success("Administrador deletado com sucesso.");
   }
 
+  function handleNavigateUpdateAdminPage() {
+    navigate(`/admins/update/${adminId}`);
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -143,7 +148,7 @@ export function AdminsTableActions({
             </>
           )}
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleNavigateUpdateAdminPage}>
           <FilePen /> Editar
         </DropdownMenuItem>
         <AlertDialog>

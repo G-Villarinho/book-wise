@@ -22,6 +22,7 @@ type UserService interface {
 	UnblockAdminByID(ctx context.Context, adminID uuid.UUID) error
 	DeleteAdminByID(ctx context.Context, adminID uuid.UUID) error
 	GetAdminByID(ctx context.Context, adminID uuid.UUID) (*models.AdminBasicInfoResponse, error)
+	UpdateAdmin(ctx context.Context, payload models.UpdateAdminPayload) error
 }
 
 type userService struct {
@@ -237,6 +238,42 @@ func (u *userService) GetAdminByID(ctx context.Context, adminID uuid.UUID) (*mod
 	}
 
 	return user.ToAdminBasicInfoResponse(), nil
+}
+
+func (u *userService) UpdateAdmin(ctx context.Context, payload models.UpdateAdminPayload) error {
+	session, ok := ctx.Value(internal.SessionKey).(models.Session)
+	if !ok {
+		return models.ErrUserNotFoundInContext
+	}
+
+	if session.UserID == payload.AdminID {
+		return models.ErrSameIDProvided
+	}
+
+	user, err := u.userRepository.GetUserByID(ctx, payload.AdminID, []models.Role{models.Admin})
+	if err != nil {
+		return fmt.Errorf("get user by id %q: %w", payload.AdminID, err)
+	}
+
+	if payload.Email != nil {
+		if user.Email != *payload.Email {
+			existsUser, err := u.userRepository.GetUserByEmail(ctx, *payload.Email, nil)
+			if err != nil {
+				return fmt.Errorf("get user by email: %w", err)
+			}
+
+			if existsUser != nil {
+				return models.ErrEmailAlreadyExists
+			}
+		}
+	}
+
+	user.ApplyUpdate(payload)
+	if err := u.userRepository.UpdateUser(ctx, *user); err != nil {
+		return fmt.Errorf("update user %q: %w", payload.AdminID, err)
+	}
+
+	return nil
 }
 
 func getUserKey(userID uuid.UUID) string {

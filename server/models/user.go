@@ -66,6 +66,12 @@ type UpdateAdminStatusPayload struct {
 	AdminID uuid.UUID `json:"adminId" validate:"required"`
 }
 
+type UpdateAdminPayload struct {
+	AdminID  uuid.UUID `json:"adminId" validate:"required"`
+	FullName *string   `json:"fullName" validate:"max=255"`
+	Email    *string   `json:"email" validate:"email,max=255"`
+}
+
 type UserResponse struct {
 	ID       string `json:"id"`
 	FullName string `json:"fullName"`
@@ -128,6 +134,16 @@ func (u *User) ToAdminBasicInfoResponse() *AdminBasicInfoResponse {
 	return &AdminBasicInfoResponse{
 		FullName: u.FullName,
 		Email:    u.Email,
+	}
+}
+
+func (u *User) ApplyUpdate(payload UpdateAdminPayload) {
+	if payload.FullName != nil {
+		u.FullName = *payload.FullName
+	}
+
+	if payload.Email != nil {
+		u.Email = *payload.Email
 	}
 }
 

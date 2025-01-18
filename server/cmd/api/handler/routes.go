@@ -34,6 +34,7 @@ func setupUserRoutes(e *echo.Echo, di *internal.Di) {
 	adminGroup.PATCH("/unblock", userHandler.UnblockAdmin, middleware.EnsurePermission(models.UnblockAdminPermission))
 	adminGroup.DELETE("/:adminId", userHandler.DeleteAdmin, middleware.EnsurePermission(models.DeleteAdminPermission))
 	adminGroup.GET("/:adminId", userHandler.GetAdmin, middleware.EnsurePermission(models.GetAdminPermission))
+	adminGroup.PUT("", userHandler.UpdateAdmin, middleware.EnsurePermission(models.UpdateAdminPermission))
 }
 func setupAuthRoutes(e *echo.Echo, di *internal.Di) {
 	authHandler, err := internal.Invoke[AuthHandler](di)

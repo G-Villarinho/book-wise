@@ -24,7 +24,7 @@ const createAdminSchema = z.object({
 
 type CreateAdminSchemaData = z.infer<typeof createAdminSchema>;
 
-export function CreateAdministrator() {
+export function CreateAdmin() {
   const navigate = useNavigate();
 
   const {

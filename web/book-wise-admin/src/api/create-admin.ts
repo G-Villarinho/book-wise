@@ -6,5 +6,5 @@ export interface CreateAdminPayload {
 }
 
 export async function createAdmin({ fullName, email }: CreateAdminPayload) {
-  await api.post("/users/admin", { fullName, email });
+  await api.post("/users/admins", { fullName, email });
 }

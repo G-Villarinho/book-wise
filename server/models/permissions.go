@@ -23,6 +23,7 @@ const (
 	UnblockAdminPermission      Permission = "unblock_admin"
 	DeleteAdminPermission       Permission = "delete_admin"
 	GetAdminPermission          Permission = "get_admin"
+	UpdateAdminPermission       Permission = "update_admin"
 )
 
 var rolePermissions = map[Role][]Permission{
