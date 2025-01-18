@@ -27,12 +27,18 @@ type UserService interface {
 
 type userService struct {
 	di             *internal.Di
+	authService    AuthService
 	cacheService   cache.CacheService
 	sessionService SessionService
 	userRepository repositories.UserRepository
 }
 
 func NewUserService(di *internal.Di) (UserService, error) {
+	authService, err := internal.Invoke[AuthService](di)
+	if err != nil {
+		return nil, err
+	}
+
 	cacheService, err := internal.Invoke[cache.CacheService](di)
 	if err != nil {
 		return nil, err
@@ -50,6 +56,7 @@ func NewUserService(di *internal.Di) (UserService, error) {
 
 	return &userService{
 		di:             di,
+		authService:    authService,
 		cacheService:   cacheService,
 		sessionService: sessionService,
 		userRepository: userRepository,
@@ -69,6 +76,12 @@ func (u *userService) CreateUser(ctx context.Context, payload models.CreateUserP
 	user = payload.ToUser(role)
 	if err := u.userRepository.CreateUser(ctx, *user); err != nil {
 		return fmt.Errorf("create user: %w", err)
+	}
+
+	if role == models.Member {
+		if err := u.authService.SignIn(ctx, user.Email, []models.Role{models.Member}); err != nil {
+			return err
+		}
 	}
 
 	return nil
