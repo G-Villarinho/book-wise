@@ -12,9 +12,9 @@ export interface AdminDetailsResponse {
   id: string;
   fullName: string;
   email: string;
-  role: string;
+  role: "admin" | "owner" | "member";
   avatar: string;
-  status: string;
+  status: "active" | "blocked";
   createdAt: string;
 }
 

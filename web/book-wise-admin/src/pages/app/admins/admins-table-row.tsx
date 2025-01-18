@@ -14,7 +14,7 @@ interface AdminsTableRowProps {
     fullName: string;
     avatar: string;
     email: string;
-    status: string;
+    status: "active" | "blocked";
     createdAt: string;
   };
 }
@@ -77,7 +77,7 @@ export function AdminsTableRow({ admin }: AdminsTableRowProps) {
         </Badge>
       </TableCell>
       <TableCell>
-        <AdminsTableActions adminId={admin.id} />
+        <AdminsTableActions adminId={admin.id} status={admin.status} />
       </TableCell>
     </TableRow>
   );

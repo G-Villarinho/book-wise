@@ -19,6 +19,7 @@ type UserService interface {
 	GetUser(ctx context.Context) (*models.UserResponse, error)
 	GetPaginatedAdmins(ctx context.Context, pagination *models.UserPagination) (*models.PaginatedResponse[*models.AdminDetailsResponse], error)
 	BlockAdminByID(ctx context.Context, adminID uuid.UUID) error
+	UnblockAdminByID(ctx context.Context, adminID uuid.UUID) error
 }
 
 type userService struct {
@@ -147,6 +148,36 @@ func (u *userService) BlockAdminByID(ctx context.Context, adminID uuid.UUID) err
 		if !errors.Is(err, models.ErrSessionNotFound) {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (u *userService) UnblockAdminByID(ctx context.Context, adminID uuid.UUID) error {
+	session, ok := ctx.Value(internal.SessionKey).(models.Session)
+	if !ok {
+		return models.ErrUserNotFoundInContext
+	}
+
+	if session.UserID == adminID {
+		return models.ErrCannotUnblockYourself
+	}
+
+	user, err := u.userRepository.GetUserByID(ctx, adminID)
+	if err != nil {
+		return fmt.Errorf("get user by id %q: %w", adminID, err)
+	}
+
+	if user == nil {
+		return models.ErrUserNotFound
+	}
+
+	if user.Status == models.Active {
+		return models.ErrUserAlreadyUnblocked
+	}
+
+	if err := u.userRepository.UpdateStatus(ctx, adminID, models.Active); err != nil {
+		return fmt.Errorf("update user %q status: %w", adminID, err)
 	}
 
 	return nil

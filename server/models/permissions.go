@@ -20,6 +20,7 @@ const (
 	GetBookPermission           Permission = "get_book"
 	ListAdminsPermission        Permission = "list_admins"
 	BlockAdminPermission        Permission = "block_admin"
+	UnblockAdminPermission      Permission = "unblock_admin"
 )
 
 var rolePermissions = map[Role][]Permission{

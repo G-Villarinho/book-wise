@@ -19,15 +19,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Ellipsis, FilePen, Trash } from "lucide-react";
+import { Ellipsis, FilePen, ShieldCheck, ShieldOff, Trash } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { PaginationResponse } from "@/@types/pagination-response";
+import { AdminDetailsResponse } from "@/api/get-admins";
+import { blockAdmin } from "@/api/block-admin";
+import { unblockAdmin } from "@/api/unblock-admin";
 
 interface AdminsTableActionsProps {
   adminId: string;
+  status: "active" | "blocked";
 }
 
-export function AdminsTableActions({ adminId }: AdminsTableActionsProps) {
+export function AdminsTableActions({
+  adminId,
+  status,
+}: AdminsTableActionsProps) {
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
 
@@ -35,6 +43,70 @@ export function AdminsTableActions({ adminId }: AdminsTableActionsProps) {
     .number()
     .transform((page) => page)
     .parse(searchParams.get("page") ?? "1");
+
+  function updateAdminStatusOnCache(
+    adminId: string,
+    status: "active" | "blocked"
+  ) {
+    const adminsListingCache = queryClient.getQueriesData<
+      PaginationResponse<AdminDetailsResponse>
+    >({
+      queryKey: ["admins"],
+    });
+
+    adminsListingCache.forEach(([cacheKey, cached]) => {
+      if (!cached) {
+        return;
+      }
+
+      queryClient.setQueryData<PaginationResponse<AdminDetailsResponse>>(
+        cacheKey,
+        {
+          ...cached,
+          data: cached.data.map((admin) => {
+            if (admin.id !== adminId) {
+              return admin;
+            }
+
+            return {
+              ...admin,
+              status,
+            };
+          }),
+        }
+      );
+    });
+
+    if (status === "active") {
+      toast.success("Administrador desbloqueado com sucesso.");
+    } else {
+      toast.success("Administrador bloqueado com sucesso.");
+    }
+  }
+
+  const { mutateAsync: blockAdminFn, isPending: isPendingBlockAdmin } =
+    useMutation({
+      mutationFn: blockAdmin,
+      onSuccess: async (_, { adminId }) => {
+        updateAdminStatusOnCache(adminId, "blocked");
+      },
+    });
+
+  const { mutateAsync: unblockAdminFn, isPending: isPendingUnblockAdmin } =
+    useMutation({
+      mutationFn: unblockAdmin,
+      onSuccess: async (_, { adminId }) => {
+        updateAdminStatusOnCache(adminId, "active");
+      },
+    });
+
+  async function handleBlockAdminToggle() {
+    if (status === "active") {
+      await blockAdminFn({ adminId });
+    } else {
+      await unblockAdminFn({ adminId });
+    }
+  }
 
   const { mutateAsync: deleteAdminFn } = useMutation({
     mutationFn: deleteAdmin,
@@ -58,6 +130,19 @@ export function AdminsTableActions({ adminId }: AdminsTableActionsProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={handleBlockAdminToggle}>
+          {isPendingBlockAdmin || isPendingUnblockAdmin ? (
+            <span className="animate-spin">⏳</span>
+          ) : status === "active" ? (
+            <>
+              <ShieldOff /> Bloquear
+            </>
+          ) : (
+            <>
+              <ShieldCheck /> Desbloquear
+            </>
+          )}
+        </DropdownMenuItem>
         <DropdownMenuItem>
           <FilePen /> Editar
         </DropdownMenuItem>
