@@ -78,12 +78,6 @@ func (u *userService) CreateUser(ctx context.Context, payload models.CreateUserP
 		return fmt.Errorf("create user: %w", err)
 	}
 
-	if role == models.Member {
-		if err := u.authService.SignIn(ctx, user.Email, []models.Role{models.Member}); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 

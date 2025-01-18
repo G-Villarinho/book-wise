@@ -137,7 +137,7 @@ func (a *authHandler) VeryfyMagicLink(ctx echo.Context) error {
 		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "É necessário informar uma URL de redirecionamento para continuar.")
 	}
 
-	if redirectURL != config.Env.RedirectAdminURL {
+	if redirectURL != config.Env.RedirectAdminURL || redirectURL != config.Env.RedirectMemberURL {
 		log.Warn("Redirect URL is invalid")
 		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "A URL de redirecionamento informada não é válida. Entre em contato com o suporte.")
 	}
