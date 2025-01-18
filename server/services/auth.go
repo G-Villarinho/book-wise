@@ -113,7 +113,7 @@ func (a *authService) VeryfyMagicLink(ctx context.Context, code uuid.UUID) (stri
 		return "", fmt.Errorf("get magic link: %w", err)
 	}
 
-	user, err := a.userRespository.GetUserByID(ctx, userID)
+	user, err := a.userRespository.GetUserByID(ctx, userID, nil)
 	if err != nil {
 		return "", fmt.Errorf("get user by id: %w", err)
 	}

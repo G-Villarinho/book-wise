@@ -23,16 +23,18 @@ func setupUserRoutes(e *echo.Echo, di *internal.Di) {
 		log.Fatal("error to create user handler: ", err)
 	}
 
-	group := e.Group("/v1/users")
+	userGroup := e.Group("/v1/users")
+	userGroup.POST("/member", userHandler.CreateMember)
+	userGroup.GET("/me", userHandler.GetUser, middleware.EnsureAuthenticated(di))
 
-	group.POST("/member", userHandler.CreateMember)
-	group.POST("/admin", userHandler.CreateAdmin, middleware.EnsureAuthenticated(di), middleware.EnsurePermission(models.CreateAdminPermission))
-	group.GET("/me", userHandler.GetUser, middleware.EnsureAuthenticated(di))
-	group.GET("/admins", userHandler.GetAdmins, middleware.EnsureAuthenticated(di), middleware.EnsurePermission(models.ListAdminsPermission))
-	group.PATCH("/admin/block", userHandler.BlockAdmin, middleware.EnsureAuthenticated(di), middleware.EnsurePermission(models.BlockAdminPermission))
-	group.PATCH("/admin/unblock", userHandler.UnblockAdmin, middleware.EnsureAuthenticated(di), middleware.EnsurePermission(models.UnblockAdminPermission))
+	adminGroup := userGroup.Group("/admins", middleware.EnsureAuthenticated(di))
+	adminGroup.POST("", userHandler.CreateAdmin, middleware.EnsurePermission(models.CreateAdminPermission))
+	adminGroup.GET("", userHandler.GetAdmins, middleware.EnsurePermission(models.ListAdminsPermission))
+	adminGroup.PATCH("/block", userHandler.BlockAdmin, middleware.EnsurePermission(models.BlockAdminPermission))
+	adminGroup.PATCH("/unblock", userHandler.UnblockAdmin, middleware.EnsurePermission(models.UnblockAdminPermission))
+	adminGroup.DELETE("/:adminId", userHandler.DeleteAdmin, middleware.EnsurePermission(models.DeleteAdminPermission))
+	adminGroup.GET("/:adminId", userHandler.GetAdmin, middleware.EnsurePermission(models.GetAdminPermission))
 }
-
 func setupAuthRoutes(e *echo.Echo, di *internal.Di) {
 	authHandler, err := internal.Invoke[AuthHandler](di)
 	if err != nil {

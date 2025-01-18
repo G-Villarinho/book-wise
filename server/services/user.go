@@ -20,6 +20,8 @@ type UserService interface {
 	GetPaginatedAdmins(ctx context.Context, pagination *models.UserPagination) (*models.PaginatedResponse[*models.AdminDetailsResponse], error)
 	BlockAdminByID(ctx context.Context, adminID uuid.UUID) error
 	UnblockAdminByID(ctx context.Context, adminID uuid.UUID) error
+	DeleteAdminByID(ctx context.Context, adminID uuid.UUID) error
+	GetAdminByID(ctx context.Context, adminID uuid.UUID) (*models.AdminBasicInfoResponse, error)
 }
 
 type userService struct {
@@ -87,7 +89,7 @@ func (u *userService) GetUser(ctx context.Context) (*models.UserResponse, error)
 		return nil, fmt.Errorf("get user from cache: %w", err)
 	}
 
-	user, err := u.userRepository.GetUserByID(ctx, session.UserID)
+	user, err := u.userRepository.GetUserByID(ctx, session.UserID, nil)
 	if err != nil {
 		return nil, fmt.Errorf("get user by id: %w", err)
 	}
@@ -127,7 +129,7 @@ func (u *userService) BlockAdminByID(ctx context.Context, adminID uuid.UUID) err
 		return models.ErrCannotBlockYourself
 	}
 
-	user, err := u.userRepository.GetUserByID(ctx, adminID)
+	user, err := u.userRepository.GetUserByID(ctx, adminID, []models.Role{models.Admin})
 	if err != nil {
 		return fmt.Errorf("get user by id %q: %w", adminID, err)
 	}
@@ -163,7 +165,7 @@ func (u *userService) UnblockAdminByID(ctx context.Context, adminID uuid.UUID) e
 		return models.ErrCannotUnblockYourself
 	}
 
-	user, err := u.userRepository.GetUserByID(ctx, adminID)
+	user, err := u.userRepository.GetUserByID(ctx, adminID, []models.Role{models.Admin})
 	if err != nil {
 		return fmt.Errorf("get user by id %q: %w", adminID, err)
 	}
@@ -181,6 +183,60 @@ func (u *userService) UnblockAdminByID(ctx context.Context, adminID uuid.UUID) e
 	}
 
 	return nil
+}
+
+func (u *userService) DeleteAdminByID(ctx context.Context, adminID uuid.UUID) error {
+	session, ok := ctx.Value(internal.SessionKey).(models.Session)
+	if !ok {
+		return models.ErrUserNotFoundInContext
+	}
+
+	if session.UserID == adminID {
+		return models.ErrCannotDeleteYourself
+	}
+
+	user, err := u.userRepository.GetUserByID(ctx, adminID, []models.Role{models.Admin})
+	if err != nil {
+		return fmt.Errorf("get user by id %q: %w", adminID, err)
+	}
+
+	if user == nil {
+		return models.ErrUserNotFound
+	}
+
+	if err := u.userRepository.DeleteUserByID(ctx, adminID); err != nil {
+		return fmt.Errorf("delete user by ID %q: %w", adminID, err)
+	}
+
+	if err := u.sessionService.DeleteAllSessions(ctx, adminID); err != nil {
+		if !errors.Is(err, models.ErrSessionNotFound) {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (u *userService) GetAdminByID(ctx context.Context, adminID uuid.UUID) (*models.AdminBasicInfoResponse, error) {
+	session, ok := ctx.Value(internal.SessionKey).(models.Session)
+	if !ok {
+		return nil, models.ErrUserNotFoundInContext
+	}
+
+	if session.UserID == adminID {
+		return nil, models.ErrSameIDProvided
+	}
+
+	user, err := u.userRepository.GetUserByID(ctx, adminID, []models.Role{models.Admin})
+	if err != nil {
+		return nil, fmt.Errorf("get user by id %q: %w", adminID, err)
+	}
+
+	if user == nil {
+		return nil, models.ErrUserNotFound
+	}
+
+	return user.ToAdminBasicInfoResponse(), nil
 }
 
 func getUserKey(userID uuid.UUID) string {

@@ -5,5 +5,5 @@ export interface DeleteAdminParams {
 }
 
 export async function deleteAdmin({ adminId }: DeleteAdminParams) {
-  await api.delete(`/users/admin/${adminId}`);
+  await api.delete(`/users/admins/${adminId}`);
 }

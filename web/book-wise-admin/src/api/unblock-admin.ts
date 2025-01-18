@@ -5,5 +5,5 @@ export interface UnblockAdminPayload {
 }
 
 export async function unblockAdmin({ adminId }: UnblockAdminPayload) {
-  await api.patch("/users/admin/unblock", { adminId });
+  await api.patch("/users/admins/unblock", { adminId });
 }

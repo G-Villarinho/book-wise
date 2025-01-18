@@ -5,5 +5,5 @@ export interface BlockAdminPayload {
 }
 
 export async function blockAdmin({ adminId }: BlockAdminPayload) {
-  await api.patch("/users/admin/block", { adminId });
+  await api.patch("/users/admins/block", { adminId });
 }

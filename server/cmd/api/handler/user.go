@@ -10,6 +10,7 @@ import (
 	"github.com/G-Villarinho/book-wise-api/internal"
 	"github.com/G-Villarinho/book-wise-api/models"
 	"github.com/G-Villarinho/book-wise-api/services"
+	"github.com/google/uuid"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/labstack/echo/v4"
 )
@@ -21,6 +22,8 @@ type UserHandler interface {
 	GetAdmins(ctx echo.Context) error
 	BlockAdmin(ctx echo.Context) error
 	UnblockAdmin(ctx echo.Context) error
+	DeleteAdmin(ctx echo.Context) error
+	GetAdmin(ctx echo.Context) error
 }
 
 type userHandler struct {
@@ -208,7 +211,7 @@ func (u *userHandler) BlockAdmin(ctx echo.Context) error {
 		return responses.InternalServerAPIErrorResponse(ctx)
 	}
 
-	return ctx.NoContent(http.StatusOK)
+	return ctx.NoContent(http.StatusNoContent)
 }
 
 func (u *userHandler) UnblockAdmin(ctx echo.Context) error {
@@ -255,5 +258,70 @@ func (u *userHandler) UnblockAdmin(ctx echo.Context) error {
 		return responses.InternalServerAPIErrorResponse(ctx)
 	}
 
-	return ctx.NoContent(http.StatusOK)
+	return ctx.NoContent(http.StatusNoContent)
+}
+
+func (u *userHandler) DeleteAdmin(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "user"),
+		slog.String("func", "DeleteAdmin"),
+	)
+
+	adminID, err := uuid.Parse(ctx.Param("adminId"))
+	if err != nil {
+		log.Warn(err.Error())
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_params", "Parametros de busca inválidos.")
+	}
+
+	if err := u.userService.DeleteAdminByID(ctx.Request().Context(), adminID); err != nil {
+		log.Error(err.Error())
+		if errors.Is(err, models.ErrUserNotFoundInContext) {
+			return responses.AccessDeniedAPIErrorResponse(ctx)
+		}
+
+		if errors.Is(err, models.ErrCannotDeleteYourself) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusConflict, "conflict", "Você não pode remover a si mesmo.")
+		}
+
+		if errors.Is(err, models.ErrUserNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Nenhum administrador encontrado para remover.")
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.NoContent(http.StatusNoContent)
+}
+
+func (u *userHandler) GetAdmin(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "user"),
+		slog.String("func", "DeleteAdmin"),
+	)
+
+	adminID, err := uuid.Parse(ctx.Param("adminId"))
+	if err != nil {
+		log.Warn(err.Error())
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_params", "Parametros de busca inválidos.")
+	}
+
+	response, err := u.userService.GetAdminByID(ctx.Request().Context(), adminID)
+	if err != nil {
+		log.Error(err.Error())
+		if errors.Is(err, models.ErrUserNotFoundInContext) {
+			return responses.AccessDeniedAPIErrorResponse(ctx)
+		}
+
+		if errors.Is(err, models.ErrSameIDProvided) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusConflict, "conflict", "Você não pode obter informações sobre si mesmo neste contexto.")
+		}
+
+		if errors.Is(err, models.ErrUserNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Nenhum administrador encontrado.")
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.JSON(http.StatusOK, response)
 }

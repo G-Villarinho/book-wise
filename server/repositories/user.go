@@ -14,9 +14,10 @@ import (
 type UserRepository interface {
 	CreateUser(ctx context.Context, user models.User) error
 	GetUserByEmail(ctx context.Context, email string, roles []models.Role) (*models.User, error)
-	GetUserByID(ctx context.Context, ID uuid.UUID) (*models.User, error)
+	GetUserByID(ctx context.Context, ID uuid.UUID, roles []models.Role) (*models.User, error)
 	GetPaginatedUsersByRole(ctx context.Context, role models.Role, pagination *models.UserPagination) (*models.PaginatedResponse[models.User], error)
 	UpdateStatus(ctx context.Context, ID uuid.UUID, status models.Status) error
+	DeleteUserByID(ctx context.Context, ID uuid.UUID) error
 }
 
 type userRepository struct {
@@ -56,9 +57,14 @@ func (u *userRepository) GetUserByEmail(ctx context.Context, email string, roles
 	return user, nil
 }
 
-func (u *userRepository) GetUserByID(ctx context.Context, ID uuid.UUID) (*models.User, error) {
+func (u *userRepository) GetUserByID(ctx context.Context, ID uuid.UUID, roles []models.Role) (*models.User, error) {
 	var user *models.User
-	if err := u.DB.WithContext(ctx).Where("id = ?", ID).First(&user).Error; err != nil {
+	query := u.DB.WithContext(ctx).Where("Id = ?", ID)
+	if roles != nil {
+		query = query.Where("Role IN ?", roles)
+	}
+
+	if err := query.First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -97,8 +103,19 @@ func (u *userRepository) UpdateStatus(ctx context.Context, ID uuid.UUID, status 
 	if err := u.DB.
 		WithContext(ctx).
 		Model(&models.User{}).
-		Where("Id = ?", ID.String()).
+		Where("Id = ?", ID).
 		UpdateColumn("Status", status).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *userRepository) DeleteUserByID(ctx context.Context, ID uuid.UUID) error {
+	if err := u.DB.
+		WithContext(ctx).
+		Where("ID = ?", ID).
+		Delete(&models.User{}).Error; err != nil {
 		return err
 	}
 

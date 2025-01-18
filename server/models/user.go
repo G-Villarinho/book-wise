@@ -20,6 +20,8 @@ var (
 	ErrUserAlredyBlocked     = errors.New("the provide user`s ID already blocked")
 	ErrUserAlreadyActive     = errors.New("the provided user's ID is already active")
 	ErrUserAlreadyUnblocked  = errors.New("the provided user's ID is already unblocked")
+	ErrCannotDeleteYourself  = errors.New("delete user: the logged-in user's ID was provided as the target")
+	ErrSameIDProvided        = errors.New("the logged-in user's ID was provided as the target")
 )
 
 type Status string
@@ -40,7 +42,7 @@ type User struct {
 	BaseModel
 	FullName string         `gorm:"column:FullName;type:varchar(255);not null"`
 	Email    string         `gorm:"column:Email;type:varchar(255);not null;unique"`
-	Status   Status         `gorm:"column:Status;type:enum('active', 'blocked');not null;default:'active'"`
+	Status   Status         `gorm:"column:Status;type:enum('active', 'blocked');not null;default:'active';index"`
 	Role     Role           `gorm:"column:Role;type:enum('member', 'admin', 'owner');not null;default:'member';index"`
 	Avatar   sql.NullString `gorm:"column:Avatar;type:varchar(255)"`
 }
@@ -82,6 +84,11 @@ type AdminDetailsResponse struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
+type AdminBasicInfoResponse struct {
+	FullName string `json:"fullName"`
+	Email    string `json:"email"`
+}
+
 func (cup *CreateUserPayload) ToUser(role Role) *User {
 	ID, _ := uuid.NewV7()
 
@@ -114,6 +121,13 @@ func (u *User) ToAdminDetailsResponse() *AdminDetailsResponse {
 		Status:    string(u.Status),
 		Avatar:    u.Avatar.String,
 		CreatedAt: u.CreatedAt,
+	}
+}
+
+func (u *User) ToAdminBasicInfoResponse() *AdminBasicInfoResponse {
+	return &AdminBasicInfoResponse{
+		FullName: u.FullName,
+		Email:    u.Email,
 	}
 }
 
