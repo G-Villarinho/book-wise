@@ -255,22 +255,30 @@ func (u *userService) UpdateAdmin(ctx context.Context, payload models.UpdateAdmi
 		return fmt.Errorf("get user by id %q: %w", payload.AdminID, err)
 	}
 
-	if payload.Email != nil {
-		if user.Email != *payload.Email {
-			existsUser, err := u.userRepository.GetUserByEmail(ctx, *payload.Email, nil)
-			if err != nil {
-				return fmt.Errorf("get user by email: %w", err)
-			}
-
-			if existsUser != nil {
-				return models.ErrEmailAlreadyExists
-			}
-		}
+	if err := u.validateEmailChange(ctx, user, payload.Email); err != nil {
+		return err
 	}
 
 	user.ApplyUpdate(payload)
 	if err := u.userRepository.UpdateUser(ctx, *user); err != nil {
 		return fmt.Errorf("update user %q: %w", payload.AdminID, err)
+	}
+
+	return nil
+}
+
+func (u *userService) validateEmailChange(ctx context.Context, user *models.User, newEmail *string) error {
+	if newEmail == nil || *newEmail == user.Email {
+		return nil
+	}
+
+	existsUser, err := u.userRepository.GetUserByEmail(ctx, *newEmail, nil)
+	if err != nil {
+		return fmt.Errorf("get user by email: %w", err)
+	}
+
+	if existsUser != nil {
+		return models.ErrEmailAlreadyExists
 	}
 
 	return nil
