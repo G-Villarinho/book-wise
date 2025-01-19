@@ -32,7 +32,29 @@ func NewEvaluationRepository(di *internal.Di) (EvaluationRepository, error) {
 }
 
 func (e *evaluationRepository) CreateEvaluation(ctx context.Context, evaluation models.Evaluation) error {
-	if err := e.DB.WithContext(ctx).Create(evaluation).Error; err != nil {
+	tx := e.DB.WithContext(ctx).Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Create(&evaluation).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Model(&models.Book{}).
+		Where("ID = ?", evaluation.BookID).
+		UpdateColumn("TotalEvaluations", gorm.Expr("TotalEvaluations + ?", 1)).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Commit().Error; err != nil {
 		return err
 	}
 

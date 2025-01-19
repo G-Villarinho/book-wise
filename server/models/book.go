@@ -26,8 +26,9 @@ type Book struct {
 	CoverImageURL    string `gorm:"column:Avatar;type:varchar(500);not null"`
 	Published        bool   `gorm:"column:Published;type:TINYINT;not null;default:0"`
 
-	Categories []Category `gorm:"many2many:BookCategories;"`
-	Authors    []Author   `gorm:"many2many:BookAuthors;"`
+	Categories  []Category   `gorm:"many2many:BookCategories;"`
+	Authors     []Author     `gorm:"many2many:BookAuthors;"`
+	Evaluations []Evaluation `gorm:"foreignKey:BookID;references:ID"`
 }
 
 func (b *Book) TableName() string {
