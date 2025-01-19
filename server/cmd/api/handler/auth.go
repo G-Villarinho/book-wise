@@ -120,6 +120,7 @@ func (a *authHandler) VeryfyMagicLink(ctx echo.Context) error {
 		slog.String("handler", "auth"),
 		slog.String("func", "VerifyMagicLink"),
 	)
+
 	code, err := uuid.Parse(ctx.QueryParam("code"))
 	if err != nil {
 		log.Warn("Invalid Magic Link code format")
@@ -132,7 +133,7 @@ func (a *authHandler) VeryfyMagicLink(ctx echo.Context) error {
 		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "É necessário informar uma URL de redirecionamento para continuar.")
 	}
 
-	if redirectURL != config.Env.RedirectAdminURL || redirectURL != config.Env.RedirectMemberURL {
+	if redirectURL != config.Env.RedirectAdminURL && redirectURL != config.Env.RedirectMemberURL {
 		log.Warn("Redirect URL is invalid")
 		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "A URL de redirecionamento informada não é válida. Entre em contato com o suporte.")
 	}
