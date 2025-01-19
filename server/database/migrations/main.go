@@ -26,6 +26,7 @@ func main() {
 		&models.Book{},
 		&models.Author{},
 		&models.Category{},
+		&models.Evaluation{},
 	); err != nil {
 		log.Fatal("error to migrate: ", err)
 	}
