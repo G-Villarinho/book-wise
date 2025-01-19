@@ -70,8 +70,10 @@ input,
 textarea,
 button {
   font: 400 1rem roboto, sans-serif;
+  color-scheme: dark;
 }
 
 * {
   font: 400 1rem roboto, sans-serif;
+  color-scheme: dark;
 }
