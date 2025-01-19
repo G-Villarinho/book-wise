@@ -1,9 +1,14 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
+)
+
+var (
+	ErrUserAlreadyEvaluteBook = errors.New("the user has already evaluated this book")
 )
 
 type Evaluation struct {

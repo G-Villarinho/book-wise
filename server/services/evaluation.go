@@ -51,6 +51,15 @@ func (e *evaluationService) CreateEvaluation(ctx context.Context, bookID uuid.UU
 		return nil, models.ErrUserNotFoundInContext
 	}
 
+	evaluation, err := e.evaluationRepository.GetUserEvaluationForBook(ctx, session.UserID, bookID)
+	if err != nil {
+		return nil, fmt.Errorf("get user %q evaluation to book %q: %w", session.UserID, bookID, err)
+	}
+
+	if evaluation != nil {
+		return nil, models.ErrUserAlreadyEvaluteBook
+	}
+
 	user, err := e.userRepository.GetUserByID(ctx, session.UserID, nil)
 	if err != nil {
 		return nil, fmt.Errorf("get user by id %q: %w", session.UserID, err)
@@ -60,16 +69,7 @@ func (e *evaluationService) CreateEvaluation(ctx context.Context, bookID uuid.UU
 		return nil, models.ErrUserNotFound
 	}
 
-	book, err := e.bookRepository.GetBookByID(ctx, bookID, false)
-	if err != nil {
-		return nil, fmt.Errorf("get book by id %q: %w", bookID, err)
-	}
-
-	if book == nil {
-		return nil, models.ErrBookNotFound
-	}
-
-	evaluation := payload.ToEvaluation(session.UserID, bookID)
+	evaluation = payload.ToEvaluation(session.UserID, bookID)
 	if err := e.evaluationRepository.CreateEvaluation(ctx, *evaluation); err != nil {
 		return nil, fmt.Errorf("create evaluation: %w", err)
 	}

@@ -5,11 +5,13 @@ import (
 
 	"github.com/G-Villarinho/book-wise-api/internal"
 	"github.com/G-Villarinho/book-wise-api/models"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type EvaluationRepository interface {
 	CreateEvaluation(ctx context.Context, evaluation models.Evaluation) error
+	GetUserEvaluationForBook(ctx context.Context, userID, bookID uuid.UUID) (*models.Evaluation, error)
 }
 
 type evaluationRepository struct {
@@ -35,4 +37,19 @@ func (e *evaluationRepository) CreateEvaluation(ctx context.Context, evaluation 
 	}
 
 	return nil
+}
+
+func (e *evaluationRepository) GetUserEvaluationForBook(ctx context.Context, userID, bookID uuid.UUID) (*models.Evaluation, error) {
+	var evaluation models.Evaluation
+	if err := e.DB.WithContext(ctx).
+		Where("UserId = ? AND BookId = ?", userID, bookID).
+		First(&evaluation).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return &evaluation, nil
 }

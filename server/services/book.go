@@ -20,18 +20,25 @@ type BookService interface {
 	DeleteBookByID(ctx context.Context, ID uuid.UUID) error
 	PublishBook(ctx context.Context, ID uuid.UUID) error
 	UnpublishBook(ctx context.Context, ID uuid.UUID) error
+	EvaluateBook(ctx context.Context, bookID uuid.UUID, payload models.CreateEvaluationPayload) (*models.EvaluationBasicInfoResponse, error)
 }
 
 type bookService struct {
-	di               *internal.Di
-	googleBookClient clients.GoogleBookClient
-	categoryService  CategoryService
-	authorRepository repositories.AuthorRepository
-	bookRepository   repositories.BookRepository
+	di                *internal.Di
+	googleBookClient  clients.GoogleBookClient
+	categoryService   CategoryService
+	evaluationService EvaluationService
+	authorRepository  repositories.AuthorRepository
+	bookRepository    repositories.BookRepository
 }
 
 func NewBookService(di *internal.Di) (BookService, error) {
 	googleBookClient, err := internal.Invoke[clients.GoogleBookClient](di)
+	if err != nil {
+		return nil, err
+	}
+
+	evaluationService, err := internal.Invoke[EvaluationService](di)
 	if err != nil {
 		return nil, err
 	}
@@ -52,11 +59,12 @@ func NewBookService(di *internal.Di) (BookService, error) {
 	}
 
 	return &bookService{
-		di:               di,
-		googleBookClient: googleBookClient,
-		authorRepository: authorRepository,
-		categoryService:  categoryService,
-		bookRepository:   bookRepository,
+		di:                di,
+		googleBookClient:  googleBookClient,
+		evaluationService: evaluationService,
+		categoryService:   categoryService,
+		authorRepository:  authorRepository,
+		bookRepository:    bookRepository,
 	}, nil
 }
 
@@ -202,4 +210,22 @@ func (b *bookService) UnpublishBook(ctx context.Context, ID uuid.UUID) error {
 	}
 
 	return nil
+}
+
+func (b *bookService) EvaluateBook(ctx context.Context, bookID uuid.UUID, payload models.CreateEvaluationPayload) (*models.EvaluationBasicInfoResponse, error) {
+	book, err := b.bookRepository.GetBookByID(ctx, bookID, true)
+	if err != nil {
+		return nil, fmt.Errorf("get book by id: %w", err)
+	}
+
+	if book == nil {
+		return nil, models.ErrBookNotFound
+	}
+
+	evaluationBasicInfoResponse, err := b.evaluationService.CreateEvaluation(ctx, bookID, payload)
+	if err != nil {
+		return nil, err
+	}
+
+	return evaluationBasicInfoResponse, nil
 }

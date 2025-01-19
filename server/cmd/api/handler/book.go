@@ -26,6 +26,7 @@ type BookHandler interface {
 	DeleteBook(ctx echo.Context) error
 	PublishBook(ctx echo.Context) error
 	UnpublishBook(ctx echo.Context) error
+	EvaluateBook(ctx echo.Context) error
 }
 
 type bookHandler struct {
@@ -173,6 +174,11 @@ func (b *bookHandler) GetBooks(ctx echo.Context) error {
 }
 
 func (b *bookHandler) DeleteBook(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "books"),
+		slog.String("func", "DeleteBook"),
+	)
+
 	ID, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		log.Warn(err.Error())
@@ -193,6 +199,11 @@ func (b *bookHandler) DeleteBook(ctx echo.Context) error {
 }
 
 func (b *bookHandler) PublishBook(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "books"),
+		slog.String("func", "PublishBook"),
+	)
+
 	ID, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		log.Error(err.Error())
@@ -217,6 +228,11 @@ func (b *bookHandler) PublishBook(ctx echo.Context) error {
 }
 
 func (b *bookHandler) UnpublishBook(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "books"),
+		slog.String("func", "UnpublishBook"),
+	)
+
 	ID, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		log.Error(err.Error())
@@ -238,4 +254,53 @@ func (b *bookHandler) UnpublishBook(ctx echo.Context) error {
 	}
 
 	return ctx.NoContent(http.StatusOK)
+}
+
+func (b *bookHandler) EvaluateBook(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "books"),
+		slog.String("func", "EvaluateBook"),
+	)
+
+	ID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		log.Error(err.Error())
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_params", "Parametros de busca inválidos.")
+	}
+
+	var payload models.CreateEvaluationPayload
+	if err := jsoniter.NewDecoder(ctx.Request().Body).Decode(&payload); err != nil {
+		log.Warn("Error to decode JSON payload", slog.String("error", err.Error()))
+		return responses.CannotBindPayloadAPIErrorResponse(ctx)
+	}
+
+	validationErrors := validation.ValidateStruct(&payload)
+	if validationErrors != nil {
+		if msg, exists := validationErrors["validation_setup"]; exists {
+			log.Warn("Error in validation setup", slog.String("message", msg))
+			return responses.CannotBindPayloadAPIErrorResponse(ctx)
+		}
+		return responses.NewValidationErrorResponse(ctx, validationErrors)
+	}
+
+	response, err := b.bookService.EvaluateBook(ctx.Request().Context(), ID, payload)
+	if err != nil {
+		log.Error(err.Error())
+
+		if errors.Is(err, models.ErrUserNotFoundInContext) {
+			return responses.AccessDeniedAPIErrorResponse(ctx)
+		}
+
+		if errors.Is(err, models.ErrBookNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Nenhum livro foi encontrado para realizar a avaliação.")
+		}
+
+		if errors.Is(err, models.ErrUserAlreadyEvaluteBook) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusConflict, "conflict", "Você só pode realizar uma avaliação por livro.")
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.JSON(http.StatusCreated, response)
 }
