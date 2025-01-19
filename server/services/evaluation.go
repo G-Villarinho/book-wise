@@ -1,0 +1,78 @@
+package services
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/G-Villarinho/book-wise-api/internal"
+	"github.com/G-Villarinho/book-wise-api/models"
+	"github.com/G-Villarinho/book-wise-api/repositories"
+	"github.com/google/uuid"
+)
+
+type EvaluationService interface {
+	CreateEvaluation(ctx context.Context, bookID uuid.UUID, payload models.CreateEvaluationPayload) (*models.EvaluationBasicInfoResponse, error)
+}
+
+type evaluationService struct {
+	di                   *internal.Di
+	bookRepository       repositories.BookRepository
+	evaluationRepository repositories.EvaluationRepository
+	userRepository       repositories.UserRepository
+}
+
+func NewEvaluationService(di *internal.Di) (EvaluationService, error) {
+	bookRepository, err := internal.Invoke[repositories.BookRepository](di)
+	if err != nil {
+		return nil, err
+	}
+
+	evaluationRepository, err := internal.Invoke[repositories.EvaluationRepository](di)
+	if err != nil {
+		return nil, err
+	}
+
+	userRepository, err := internal.Invoke[repositories.UserRepository](di)
+	if err != nil {
+		return nil, err
+	}
+
+	return &evaluationService{
+		di:                   di,
+		bookRepository:       bookRepository,
+		evaluationRepository: evaluationRepository,
+		userRepository:       userRepository,
+	}, nil
+}
+
+func (e *evaluationService) CreateEvaluation(ctx context.Context, bookID uuid.UUID, payload models.CreateEvaluationPayload) (*models.EvaluationBasicInfoResponse, error) {
+	session, ok := ctx.Value(internal.SessionKey).(models.Session)
+	if !ok {
+		return nil, models.ErrUserNotFoundInContext
+	}
+
+	user, err := e.userRepository.GetUserByID(ctx, session.UserID, nil)
+	if err != nil {
+		return nil, fmt.Errorf("get user by id %q: %w", session.UserID, err)
+	}
+
+	if user == nil {
+		return nil, models.ErrUserNotFound
+	}
+
+	book, err := e.bookRepository.GetBookByID(ctx, bookID, false)
+	if err != nil {
+		return nil, fmt.Errorf("get book by id %q: %w", bookID, err)
+	}
+
+	if book == nil {
+		return nil, models.ErrBookNotFound
+	}
+
+	evaluation := payload.ToEvaluation(session.UserID, bookID)
+	if err := e.evaluationRepository.CreateEvaluation(ctx, *evaluation); err != nil {
+		return nil, fmt.Errorf("create evaluation: %w", err)
+	}
+
+	return evaluation.ToEvaluationBasicInfoResponse(*user), nil
+}

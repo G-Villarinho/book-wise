@@ -52,14 +52,12 @@ func (a *authHandler) SignInMember(ctx echo.Context) error {
 		return responses.CannotBindPayloadAPIErrorResponse(ctx)
 	}
 
-	validationErrors, err := validation.ValidateStruct(&payload)
-	if err != nil {
-		log.Warn(err.Error())
-		return responses.CannotBindPayloadAPIErrorResponse(ctx)
-	}
-
+	validationErrors := validation.ValidateStruct(&payload)
 	if validationErrors != nil {
-		log.Warn("Error to validate JSON payload")
+		if msg, exists := validationErrors["validation_setup"]; exists {
+			log.Warn("Error in validation setup", slog.String("message", msg))
+			return responses.CannotBindPayloadAPIErrorResponse(ctx)
+		}
 		return responses.NewValidationErrorResponse(ctx, validationErrors)
 	}
 
@@ -91,15 +89,12 @@ func (a *authHandler) SignInAdmin(ctx echo.Context) error {
 		log.Warn("Error to decode JSON payload", slog.String("error", err.Error()))
 		return responses.CannotBindPayloadAPIErrorResponse(ctx)
 	}
-
-	validationErrors, err := validation.ValidateStruct(&payload)
-	if err != nil {
-		log.Warn(err.Error())
-		return responses.CannotBindPayloadAPIErrorResponse(ctx)
-	}
-
+	validationErrors := validation.ValidateStruct(&payload)
 	if validationErrors != nil {
-		log.Warn("Error to validate JSON payload")
+		if msg, exists := validationErrors["validation_setup"]; exists {
+			log.Warn("Error in validation setup", slog.String("message", msg))
+			return responses.CannotBindPayloadAPIErrorResponse(ctx)
+		}
 		return responses.NewValidationErrorResponse(ctx, validationErrors)
 	}
 

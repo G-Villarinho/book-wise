@@ -1,7 +1,6 @@
 package validation
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/G-Villarinho/book-wise-api/utils"
@@ -10,15 +9,15 @@ import (
 
 type ValidationErrors map[string]string
 
-func ValidateStruct(s any) (ValidationErrors, error) {
+func ValidateStruct(s any) ValidationErrors {
 	if err := utils.TrimStrings(s); err != nil {
-		return nil, fmt.Errorf("trim strings: %w", err)
+		return ValidationErrors{"validation_setup": err.Error()}
 	}
 
 	validate := validator.New()
 
 	if err := SetupCustomValidations(validate); err != nil {
-		return nil, fmt.Errorf("setup custom validations: %w", err)
+		return ValidationErrors{"validation_setup": err.Error()}
 	}
 
 	validationErrors := make(ValidationErrors)
@@ -30,10 +29,10 @@ func ValidateStruct(s any) (ValidationErrors, error) {
 	}
 
 	if len(validationErrors) > 0 {
-		return validationErrors, nil
+		return validationErrors
 	}
 
-	return nil, nil
+	return nil
 }
 
 func getErrorMessage(err validator.FieldError) string {
