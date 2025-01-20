@@ -167,7 +167,8 @@ func (r *bookRepository) DeleteBooksByAuthorID(ctx context.Context, authorID uui
 func (r *bookRepository) GetPaginatedPublishedBooks(ctx context.Context, pagination *models.PublishedBookPagination) (*models.PaginatedResponse[models.Book], error) {
 	query := r.DB.WithContext(ctx).
 		Model(&models.Book{}).
-		Where("Published = ?", true).
+		Select("DISTINCT Books.*").
+		Where("Books.Published = ?", true).
 		Preload("Categories").
 		Preload("Authors").
 		Preload("Evaluations")
