@@ -1,21 +1,26 @@
+import { getTopCategories } from "@/api/get-top-categories";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
-
-const categories = [
-  { id: "tudo", label: "Tudo" },
-  { id: "computacao", label: "Computação" },
-  { id: "educacao", label: "Educação" },
-  { id: "fantasia", label: "Fantasia" },
-  { id: "ficcao-cientifica", label: "Ficção Científica" },
-  { id: "horror", label: "Horror" },
-  { id: "hqs", label: "HQs" },
-  { id: "suspense", label: "Suspense" },
-];
 
 export function CategoryFilter() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const selectedCategory = searchParams.get("categoryId");
+
+  const {
+    data: topCategories,
+    isLoading,
+    isError,
+  } = useQuery({ queryKey: ["topCategories"], queryFn: getTopCategories });
+
+  const categories = [
+    { id: "all", label: "Tudo" },
+    ...(topCategories?.map((category) => ({
+      id: category.id,
+      label: category.name,
+    })) || []),
+  ];
 
   function handleCategoryChange(categoryId: string) {
     setSearchParams((prev) => {

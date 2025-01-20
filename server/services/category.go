@@ -14,6 +14,7 @@ import (
 type CategoryService interface {
 	FindOrCreateCategories(ctx context.Context, names []string) ([]models.Category, error)
 	GetAllCategories(ctx context.Context) ([]models.CategoryResponse, error)
+	GetTopCategories(ctx context.Context) ([]models.CategoryResponse, error)
 }
 
 type categoryService struct {
@@ -80,6 +81,24 @@ func (c *categoryService) FindOrCreateCategories(ctx context.Context, names []st
 
 func (c *categoryService) GetAllCategories(ctx context.Context) ([]models.CategoryResponse, error) {
 	categories, err := c.categoryRepository.GetAllCategories(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get all categories: %w", err)
+	}
+
+	if categories == nil {
+		return nil, models.ErrCategoriesNotFound
+	}
+
+	var categoriesResponse []models.CategoryResponse
+	for _, category := range categories {
+		categoriesResponse = append(categoriesResponse, *category.ToCategoryResponse())
+	}
+
+	return categoriesResponse, nil
+}
+
+func (c *categoryService) GetTopCategories(ctx context.Context) ([]models.CategoryResponse, error) {
+	categories, err := c.categoryRepository.GetTopCategories(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get all categories: %w", err)
 	}

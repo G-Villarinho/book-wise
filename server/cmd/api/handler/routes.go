@@ -80,6 +80,7 @@ func setupCategoryRoutes(e *echo.Echo, di *internal.Di) {
 	group := e.Group("/v1/categories", middleware.EnsureAuthenticated(di))
 
 	group.GET("", categoryHandler.GetCategories)
+	group.GET("/top", categoryHandler.GetTopCategories)
 }
 
 func setupAuthorHandler(e *echo.Echo, di *internal.Di) {
