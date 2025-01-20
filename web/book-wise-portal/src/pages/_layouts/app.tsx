@@ -41,7 +41,7 @@ export function AppLayout() {
       <div className="hidden h-full md:w-72 md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-gray-950">
         <Sidebar />
       </div>
-      <main className="md:pl-80">
+      <main className="md:pl-72">
         <Navbar />
         <Outlet />
       </main>

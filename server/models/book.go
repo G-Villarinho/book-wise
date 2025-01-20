@@ -23,7 +23,7 @@ type Book struct {
 	Description      string `gorm:"column:Description;type:varchar(2000);not null"`
 	TotalPages       uint   `gorm:"column:TotalPages;type:INT UNSIGNED;not null;default:0"`
 	TotalEvaluations uint   `gorm:"column:TotalEvaluations;type:INT UNSIGNED;not null;default:0"`
-	CoverImageURL    string `gorm:"column:Avatar;type:varchar(500);not null"`
+	CoverImageURL    string `gorm:"column:CoverImageUrl;type:varchar(500);not null"`
 	Published        bool   `gorm:"column:Published;type:TINYINT;not null;default:0;index"`
 
 	Categories  []Category   `gorm:"many2many:BookCategories;"`
@@ -82,15 +82,14 @@ type BookResponse struct {
 }
 
 type PublishedBookResponse struct {
-	ID               string    `json:"id"`
-	TotalPages       uint      `json:"totalPages"`
-	TotalEvaluations uint      `json:"totalEvaluations"`
-	RateAverage      float32   `json:"rateAverage"`
-	Title            string    `json:"title"`
-	CoverImageURL    string    `json:"coverImageURL"`
-	Authors          []string  `json:"authors"`
-	Categories       []string  `json:"categories"`
-	CreatedAt        time.Time `json:"createdAt"`
+	ID               string   `json:"id"`
+	TotalPages       uint     `json:"totalPages"`
+	TotalEvaluations uint     `json:"totalEvaluations"`
+	RateAverage      float32  `json:"rateAverage"`
+	Title            string   `json:"title"`
+	CoverImageURL    string   `json:"coverImageURL"`
+	Authors          []string `json:"authors"`
+	Categories       []string `json:"categories"`
 }
 
 func (cbp *CreateBookPayload) ToBook(authors []Author, categories []Category) *Book {
@@ -151,7 +150,6 @@ func (b *Book) ToPublishedBookResponse(rateAverage float32) *PublishedBookRespon
 		RateAverage:      rateAverage,
 		Title:            b.Title,
 		CoverImageURL:    b.CoverImageURL,
-		CreatedAt:        b.CreatedAt,
 		Authors:          authors,
 		Categories:       categories,
 	}

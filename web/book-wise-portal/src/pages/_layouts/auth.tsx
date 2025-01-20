@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 
 export function AuthLayout() {
   return (
-    <div className="max-w-7xl mx-auto h-screen bg-gray-900 text-white">
+    <div className="max-w-7xl mx-auto h-screen text-white">
       <div className="grid md:grid-cols-2 items-center gap-8 h-full">
         <div className="max-w-lg max-md:mx-auto w-full p-6">
           <Outlet />
