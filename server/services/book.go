@@ -21,6 +21,7 @@ type BookService interface {
 	PublishBook(ctx context.Context, ID uuid.UUID) error
 	UnpublishBook(ctx context.Context, ID uuid.UUID) error
 	EvaluateBook(ctx context.Context, bookID uuid.UUID, payload models.CreateEvaluationPayload) (*models.EvaluationBasicInfoResponse, error)
+	GetPaginatedPublishedBooks(ctx context.Context, pagination *models.PublishedBookPagination) (*models.PaginatedResponse[*models.PublishedBookResponse], error)
 }
 
 type bookService struct {
@@ -228,4 +229,32 @@ func (b *bookService) EvaluateBook(ctx context.Context, bookID uuid.UUID, payloa
 	}
 
 	return evaluationBasicInfoResponse, nil
+}
+
+func (b *bookService) GetPaginatedPublishedBooks(ctx context.Context, pagination *models.PublishedBookPagination) (*models.PaginatedResponse[*models.PublishedBookResponse], error) {
+	paginatedPublishedBooks, err := b.bookRepository.GetPaginatedPublishedBooks(ctx, pagination)
+	if err != nil {
+		return nil, fmt.Errorf("get paginated books: %w", err)
+	}
+
+	paginatedPublishedBooksResponse := models.MapPaginatedResult(paginatedPublishedBooks, func(publishedBook models.Book) *models.PublishedBookResponse {
+		rateAverage := calculateAverageRating(publishedBook.Evaluations)
+		return publishedBook.ToPublishedBookResponse(rateAverage)
+	})
+
+	return paginatedPublishedBooksResponse, nil
+}
+
+func calculateAverageRating(evaluations []models.Evaluation) float32 {
+	var sum float32
+	var count int
+	for _, eval := range evaluations {
+		sum += float32(eval.Rate)
+		count++
+	}
+
+	if count == 0 {
+		return 0
+	}
+	return sum / float32(count)
 }

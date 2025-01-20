@@ -24,7 +24,7 @@ type Book struct {
 	TotalPages       uint   `gorm:"column:TotalPages;type:INT UNSIGNED;not null;default:0"`
 	TotalEvaluations uint   `gorm:"column:TotalEvaluations;type:INT UNSIGNED;not null;default:0"`
 	CoverImageURL    string `gorm:"column:Avatar;type:varchar(500);not null"`
-	Published        bool   `gorm:"column:Published;type:TINYINT;not null;default:0"`
+	Published        bool   `gorm:"column:Published;type:TINYINT;not null;default:0;index"`
 
 	Categories  []Category   `gorm:"many2many:BookCategories;"`
 	Authors     []Author     `gorm:"many2many:BookAuthors;"`
@@ -41,6 +41,12 @@ type BookPagination struct {
 	BookID     *string `json:"bookId"`
 	AuthorID   *string `json:"authorId"`
 	CategoryID *string `json:"category"`
+}
+
+type PublishedBookPagination struct {
+	Pagination
+	Query      *string `json:"query"`
+	CategoryID *string `json:"categoryId"`
 }
 
 type CreateBookPayload struct {
@@ -70,6 +76,18 @@ type BookResponse struct {
 	Description      string    `json:"description"`
 	CoverImageURL    string    `json:"coverImageURL"`
 	Published        bool      `json:"published"`
+	Authors          []string  `json:"authors"`
+	Categories       []string  `json:"categories"`
+	CreatedAt        time.Time `json:"createdAt"`
+}
+
+type PublishedBookResponse struct {
+	ID               string    `json:"id"`
+	TotalPages       uint      `json:"totalPages"`
+	TotalEvaluations uint      `json:"totalEvaluations"`
+	RateAverage      float32   `json:"rateAverage"`
+	Title            string    `json:"title"`
+	CoverImageURL    string    `json:"coverImageURL"`
 	Authors          []string  `json:"authors"`
 	Categories       []string  `json:"categories"`
 	CreatedAt        time.Time `json:"createdAt"`
@@ -115,6 +133,29 @@ func (b *Book) ToBookResponse() *BookResponse {
 		Categories:       categories,
 	}
 }
+func (b *Book) ToPublishedBookResponse(rateAverage float32) *PublishedBookResponse {
+	var authors []string
+	for _, author := range b.Authors {
+		authors = append(authors, author.FullName)
+	}
+
+	var categories []string
+	for _, category := range b.Categories {
+		categories = append(categories, category.Name)
+	}
+
+	return &PublishedBookResponse{
+		ID:               b.BaseModel.ID.String(),
+		TotalPages:       b.TotalPages,
+		TotalEvaluations: b.TotalEvaluations,
+		RateAverage:      rateAverage,
+		Title:            b.Title,
+		CoverImageURL:    b.CoverImageURL,
+		CreatedAt:        b.CreatedAt,
+		Authors:          authors,
+		Categories:       categories,
+	}
+}
 
 func NewBookPagination(page, limit, sort, title, bookID, authorID, categoryID string) (*BookPagination, error) {
 	pagination, err := NewPagination(page, limit, sort)
@@ -132,6 +173,26 @@ func NewBookPagination(page, limit, sort, title, bookID, authorID, categoryID st
 		bookPagination.AuthorID = nil
 	} else {
 		bookPagination.AuthorID = utils.GetQueryStringPointer(authorID)
+	}
+
+	if strings.ToLower(categoryID) == "all" {
+		bookPagination.CategoryID = nil
+	} else {
+		bookPagination.CategoryID = utils.GetQueryStringPointer(categoryID)
+	}
+
+	return bookPagination, nil
+}
+
+func NewPublishedBookPagination(page, limit, sort, query, categoryID string) (*PublishedBookPagination, error) {
+	pagination, err := NewPagination(page, limit, sort)
+	if err != nil {
+		return nil, err
+	}
+
+	bookPagination := &PublishedBookPagination{
+		Pagination: *pagination,
+		Query:      utils.GetQueryStringPointer(query),
 	}
 
 	if strings.ToLower(categoryID) == "all" {

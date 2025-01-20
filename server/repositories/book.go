@@ -18,6 +18,7 @@ type BookRepository interface {
 	DeleteBookByID(ctx context.Context, ID uuid.UUID) error
 	UpdatePublicationStatus(ctx context.Context, ID uuid.UUID, publishedStatus bool) error
 	DeleteBooksByAuthorID(ctx context.Context, authorID uuid.UUID) error
+	GetPaginatedPublishedBooks(ctx context.Context, pagination *models.PublishedBookPagination) (*models.PaginatedResponse[models.Book], error)
 }
 
 type bookRepository struct {
@@ -161,4 +162,34 @@ func (r *bookRepository) DeleteBooksByAuthorID(ctx context.Context, authorID uui
 	}
 
 	return nil
+}
+
+func (r *bookRepository) GetPaginatedPublishedBooks(ctx context.Context, pagination *models.PublishedBookPagination) (*models.PaginatedResponse[models.Book], error) {
+	query := r.DB.WithContext(ctx).
+		Model(&models.Book{}).
+		Where("Published = ?", true).
+		Preload("Categories").
+		Preload("Authors").
+		Preload("Evaluations")
+
+	if pagination.Query != nil {
+		query = query.Joins("JOIN BookAuthors ON BookAuthors.BookID = Books.Id").
+			Joins("JOIN Authors ON Authors.Id = BookAuthors.AuthorID").
+			Where("Books.Title LIKE ? OR Authors.FullName LIKE ?", fmt.Sprintf("%%%s%%", *pagination.Query), fmt.Sprintf("%%%s%%", *pagination.Query))
+	}
+
+	if pagination.CategoryID != nil {
+		query = query.Joins("JOIN BookCategories ON BookCategories.BookID = Books.Id").
+			Where("BookCategories.CategoryID = ?", *pagination.CategoryID)
+	}
+
+	orders, err := paginate[models.Book](query, &pagination.Pagination, &models.Book{})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return orders, nil
 }
