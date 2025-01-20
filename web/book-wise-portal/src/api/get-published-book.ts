@@ -20,7 +20,7 @@ export interface PublishedBookResponse {
   createdAt: string;
 }
 
-export async function getPublishdBook({
+export async function getPublishedBook({
   page,
   limit,
   q,

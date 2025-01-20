@@ -5,7 +5,7 @@ import { BookCard } from "./book-card";
 import { useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
-import { getPublishdBook } from "@/api/get-published-book";
+import { getPublishedBook } from "@/api/get-published-book";
 import { Pagination } from "@/components/pagination";
 import { SearchFilter } from "./search-filter";
 import { CategoryFilter } from "./category-filter";
@@ -19,9 +19,9 @@ export function Explore() {
   const page = z.coerce.number().parse(searchParams.get("page") ?? "1");
 
   const { data: result } = useQuery({
-    queryKey: ["orders", q, categoryId, page],
+    queryKey: ["books", q, categoryId, page],
     queryFn: () =>
-      getPublishdBook({
+      getPublishedBook({
         page,
         limit: 15,
         q,

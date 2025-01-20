@@ -16,13 +16,13 @@ export function AppLayout() {
           const status = error.response?.status;
           if (status === 401) {
             navigate("/sign-in", {
-              replace: true,
+              replace: false,
             });
           }
 
           if (status === 403) {
             navigate("/forbidden", {
-              replace: true,
+              replace: false,
             });
           }
         }
