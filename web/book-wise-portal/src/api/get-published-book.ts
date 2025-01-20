@@ -11,7 +11,7 @@ export interface GetPublishdBookQuery {
 export interface PublishedBookResponse {
   id: string;
   totalPages: string;
-  totalEvaluations: string;
+  totalEvaluations: number;
   rateAverage: number;
   title: string;
   coverImageURL: string;

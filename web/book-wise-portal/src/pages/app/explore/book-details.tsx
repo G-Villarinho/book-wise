@@ -1,20 +1,29 @@
-import { Stars } from "@/pages/app/explore/stars";
+import { BookDetailsCard } from "./book-details-card";
+import { Stars } from "./stars";
 
-interface BookCardProps {
+interface BookDetailsProps {
+  id: string;
   title: string;
   authors: string[];
+  totalEvaluations: number;
+  categories: string[];
   coverImageURL: string;
   rateAverage: number;
+  totalPages: string;
 }
 
-export function BookCard({
+export function BookDetails({
+  id,
   title,
   authors,
+  totalEvaluations,
+  categories,
   coverImageURL,
   rateAverage,
-}: BookCardProps) {
+  totalPages,
+}: BookDetailsProps) {
   return (
-    <div className="flex flex-col md:flex-row items-center gap-4 p-4 bg-[#181C2A] shadow rounded-lg hover:shadow-lg hover:bg-[#202638] duration-200 cursor-pointer">
+    <div className="flex flex-col md:flex-row items-center gap-4 p-4 bg-[#181C2A] shadow rounded-lg hover:shadow-lg mt-3">
       <img
         src={coverImageURL}
         alt={title}

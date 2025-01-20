@@ -8,11 +8,10 @@ export function CategoryFilter() {
 
   const selectedCategory = searchParams.get("categoryId");
 
-  const {
-    data: topCategories,
-    isLoading,
-    isError,
-  } = useQuery({ queryKey: ["topCategories"], queryFn: getTopCategories });
+  const { data: topCategories } = useQuery({
+    queryKey: ["topCategories"],
+    queryFn: getTopCategories,
+  });
 
   const categories = [
     { id: "all", label: "Tudo" },
