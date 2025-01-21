@@ -14,6 +14,9 @@ export default {
 			"app-green-200": "#255D6A", 
 			"app-green-300": "#0A313C", 
 
+			"app-purple-100": "#8381D9", 
+			"app-purple-200": "#2A2879", 
+
 			"app-gray-100": "#F8F9FC", 
 			"app-gray-200": "#E6E8F2", 
 			"app-gray-300": "#D1D6E4", 

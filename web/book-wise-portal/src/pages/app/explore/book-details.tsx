@@ -3,6 +3,7 @@ import { BookDetailsCard } from "./book-details-card";
 import { BookEvaluationCard } from "./book-evaluation-card";
 import { useQuery } from "@tanstack/react-query";
 import { getBookEvaluations } from "@/api/get-book-evaluations";
+import { Button } from "@/components/ui/button";
 
 interface BookDetailsProps {
   book: {
@@ -10,6 +11,7 @@ interface BookDetailsProps {
     title: string;
     authors: string[];
     totalEvaluations: number;
+    hasRead: boolean;
     categories: string[];
     coverImageURL: string;
     rateAverage: number;
@@ -38,6 +40,11 @@ export function BookDetails({ book }: BookDetailsProps) {
       />
 
       <div className="mt-8">
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-app-gray-200 text-sm font-thin">Avaliações</h2>
+          {!book.hasRead && <Button variant="ghost">Avaliar</Button>}
+          {}
+        </div>
         {result &&
           result.data.map((evaluation) => {
             return (

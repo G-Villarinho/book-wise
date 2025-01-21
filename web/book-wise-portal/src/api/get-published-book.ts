@@ -14,6 +14,7 @@ export interface PublishedBookResponse {
   totalEvaluations: number;
   rateAverage: number;
   title: string;
+  hasRead: boolean;
   coverImageURL: string;
   authors: string[];
   categories: string[];
