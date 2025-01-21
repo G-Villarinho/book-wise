@@ -28,6 +28,7 @@ type BookHandler interface {
 	UnpublishBook(ctx echo.Context) error
 	EvaluateBook(ctx echo.Context) error
 	GetPublishedBooks(ctx echo.Context) error
+	GetBookEvaluations(ctx echo.Context) error
 }
 
 type bookHandler struct {
@@ -325,6 +326,33 @@ func (b *bookHandler) GetPublishedBooks(ctx echo.Context) error {
 	}
 
 	response, err := b.bookService.GetPaginatedPublishedBooks(ctx.Request().Context(), bookPagination)
+	if err != nil {
+		log.Error(err.Error())
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.JSON(http.StatusOK, response)
+}
+
+func (b *bookHandler) GetBookEvaluations(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "books"),
+		slog.String("func", "GetBookEvaluations"),
+	)
+
+	ID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		log.Error(err.Error())
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_params", "Parametros de busca inválidos.")
+	}
+
+	pagination, err := models.NewPagination(ctx.QueryParam("page"), ctx.QueryParam("limit"), ctx.QueryParam("sort"))
+	if err != nil {
+		log.Error(err.Error())
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_pagination", "Parâmetros de buscas inválidos")
+	}
+
+	response, err := b.bookService.GetPaginatedBookEvaluationsByID(ctx.Request().Context(), ID, pagination)
 	if err != nil {
 		log.Error(err.Error())
 		return responses.InternalServerAPIErrorResponse(ctx)

@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"errors"
 
 	"github.com/G-Villarinho/book-wise-api/internal"
 	"github.com/G-Villarinho/book-wise-api/models"
@@ -12,6 +13,7 @@ import (
 type EvaluationRepository interface {
 	CreateEvaluation(ctx context.Context, evaluation models.Evaluation) error
 	GetUserEvaluationForBook(ctx context.Context, userID, bookID uuid.UUID) (*models.Evaluation, error)
+	GetPaginatedEvaluationsByBookID(ctx context.Context, bookID uuid.UUID, pagination *models.Pagination) (*models.PaginatedResponse[models.Evaluation], error)
 }
 
 type evaluationRepository struct {
@@ -74,4 +76,23 @@ func (e *evaluationRepository) GetUserEvaluationForBook(ctx context.Context, use
 	}
 
 	return &evaluation, nil
+}
+
+func (e *evaluationRepository) GetPaginatedEvaluationsByBookID(ctx context.Context, bookID uuid.UUID, pagination *models.Pagination) (*models.PaginatedResponse[models.Evaluation], error) {
+	query := e.DB.
+		WithContext(ctx).
+		Model(&models.Evaluation{}).
+		Where("BookId = ?", bookID).
+		Preload("User")
+
+	evaluations, err := paginate[models.Evaluation](query, pagination, &models.Evaluation{})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return evaluations, nil
 }

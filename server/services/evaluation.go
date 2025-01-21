@@ -12,6 +12,7 @@ import (
 
 type EvaluationService interface {
 	CreateEvaluation(ctx context.Context, bookID uuid.UUID, payload models.CreateEvaluationPayload) (*models.EvaluationBasicInfoResponse, error)
+	GetPaginatedEvaluationsByBookID(ctx context.Context, bookID uuid.UUID, pagination *models.Pagination) (*models.PaginatedResponse[*models.EvaluationBasicInfoResponse], error)
 }
 
 type evaluationService struct {
@@ -74,5 +75,19 @@ func (e *evaluationService) CreateEvaluation(ctx context.Context, bookID uuid.UU
 		return nil, fmt.Errorf("create evaluation: %w", err)
 	}
 
-	return evaluation.ToEvaluationBasicInfoResponse(*user), nil
+	evaluation.User = *user
+	return evaluation.ToEvaluationBasicInfoResponse(), nil
+}
+
+func (e *evaluationService) GetPaginatedEvaluationsByBookID(ctx context.Context, bookID uuid.UUID, pagination *models.Pagination) (*models.PaginatedResponse[*models.EvaluationBasicInfoResponse], error) {
+	paginatedPublishedEvaluations, err := e.evaluationRepository.GetPaginatedEvaluationsByBookID(ctx, bookID, pagination)
+	if err != nil {
+		return nil, fmt.Errorf("get paginated evaluations by book id %q: %w", bookID, err)
+	}
+
+	paginatedPublishedEvaluationsResponse := models.MapPaginatedResult(paginatedPublishedEvaluations, func(evaluation models.Evaluation) *models.EvaluationBasicInfoResponse {
+		return evaluation.ToEvaluationBasicInfoResponse()
+	})
+
+	return paginatedPublishedEvaluationsResponse, nil
 }

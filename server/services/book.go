@@ -22,6 +22,7 @@ type BookService interface {
 	UnpublishBook(ctx context.Context, ID uuid.UUID) error
 	EvaluateBook(ctx context.Context, bookID uuid.UUID, payload models.CreateEvaluationPayload) (*models.EvaluationBasicInfoResponse, error)
 	GetPaginatedPublishedBooks(ctx context.Context, pagination *models.PublishedBookPagination) (*models.PaginatedResponse[*models.PublishedBookResponse], error)
+	GetPaginatedBookEvaluationsByID(ctx context.Context, bookID uuid.UUID, pagination *models.Pagination) (*models.PaginatedResponse[*models.EvaluationBasicInfoResponse], error)
 }
 
 type bookService struct {
@@ -243,6 +244,24 @@ func (b *bookService) GetPaginatedPublishedBooks(ctx context.Context, pagination
 	})
 
 	return paginatedPublishedBooksResponse, nil
+}
+
+func (b *bookService) GetPaginatedBookEvaluationsByID(ctx context.Context, bookID uuid.UUID, pagination *models.Pagination) (*models.PaginatedResponse[*models.EvaluationBasicInfoResponse], error) {
+	book, err := b.bookRepository.GetBookByID(ctx, bookID, true)
+	if err != nil {
+		return nil, fmt.Errorf("get book by id %q: %w", bookID, err)
+	}
+
+	if book == nil {
+		return nil, models.ErrBookNotFound
+	}
+
+	paginatedBookEvaluationsResponse, err := b.evaluationService.GetPaginatedEvaluationsByBookID(ctx, bookID, pagination)
+	if err != nil {
+		return nil, err
+	}
+
+	return paginatedBookEvaluationsResponse, nil
 }
 
 func calculateAverageRating(evaluations []models.Evaluation) float32 {

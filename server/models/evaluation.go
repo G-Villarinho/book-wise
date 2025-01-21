@@ -53,11 +53,12 @@ func (cep *CreateEvaluationPayload) ToEvaluation(userID, bookID uuid.UUID) *Eval
 		BookID:      bookID,
 	}
 }
-func (e *Evaluation) ToEvaluationBasicInfoResponse(user User) *EvaluationBasicInfoResponse {
+
+func (e *Evaluation) ToEvaluationBasicInfoResponse() *EvaluationBasicInfoResponse {
 	return &EvaluationBasicInfoResponse{
 		ID:            e.ID.String(),
-		UserFullName:  user.FullName,
-		UserAvatarURL: user.Avatar.String,
+		UserFullName:  e.User.FullName,
+		UserAvatarURL: e.User.Avatar.String,
 		Rate:          e.Rate,
 		Description:   e.Description,
 		CreatedAt:     e.CreatedAt,

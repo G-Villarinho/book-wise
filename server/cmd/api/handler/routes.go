@@ -68,6 +68,7 @@ func setupBookRoutes(e *echo.Echo, di *internal.Di) {
 	group.PATCH("/:id/unpublish", bookHandler.UnpublishBook, middleware.EnsurePermission(models.UnpublishBookPermission))
 
 	group.POST("/:id/evaluations", bookHandler.EvaluateBook)
+	group.GET("/:id/evaluations", bookHandler.GetBookEvaluations)
 	group.GET("/published", bookHandler.GetPublishedBooks)
 }
 
