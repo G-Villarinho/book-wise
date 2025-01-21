@@ -18,8 +18,10 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { BookDetails } from "./book-details";
+// import { useState } from "react";
 
 export function Explore() {
+  // const [isBookDetailsOpen, setIsBookDetailsOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const q = searchParams.get("q");
@@ -66,7 +68,7 @@ export function Explore() {
                 <SheetTitle />
                 <SheetDescription />
               </SheetHeader>
-              <BookDetails {...book} />
+              <BookDetails book={book} />
             </SheetContent>
           </Sheet>
         ))}
