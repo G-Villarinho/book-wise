@@ -26,7 +26,7 @@ func (e *Evaluation) TableName() string {
 }
 
 type CreateEvaluationPayload struct {
-	Rate        uint8  `json:"rate" validate:"required,gte=1,lte=5"`
+	Rate        uint8  `json:"rate" validate:"required,gte=0,lte=5"`
 	Description string `json:"description" validate:"required,max=500"`
 }
 
