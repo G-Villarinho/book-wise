@@ -13,7 +13,7 @@ import (
 type EvaluationRepository interface {
 	CreateEvaluation(ctx context.Context, evaluation models.Evaluation) error
 	GetUserEvaluationForBook(ctx context.Context, userID, bookID uuid.UUID) (*models.Evaluation, error)
-	GetPaginatedEvaluationsByBookID(ctx context.Context, bookID uuid.UUID, pagination *models.Pagination) (*models.PaginatedResponse[models.Evaluation], error)
+	GetPaginatedEvaluationsByBookID(ctx context.Context, userID, bookID uuid.UUID, pagination *models.Pagination) (*models.PaginatedResponse[models.Evaluation], error)
 }
 
 type evaluationRepository struct {
@@ -78,12 +78,29 @@ func (e *evaluationRepository) GetUserEvaluationForBook(ctx context.Context, use
 	return &evaluation, nil
 }
 
-func (e *evaluationRepository) GetPaginatedEvaluationsByBookID(ctx context.Context, bookID uuid.UUID, pagination *models.Pagination) (*models.PaginatedResponse[models.Evaluation], error) {
+func (e *evaluationRepository) GetPaginatedEvaluationsByBookID(ctx context.Context, userID, bookID uuid.UUID, pagination *models.Pagination) (*models.PaginatedResponse[models.Evaluation], error) {
 	query := e.DB.
 		WithContext(ctx).
 		Model(&models.Evaluation{}).
 		Where("BookId = ?", bookID).
 		Preload("User")
+
+	userEvaluationSubquery := e.DB.WithContext(ctx).
+		Model(&models.Evaluation{}).
+		Where("UserId = ? AND BookId = ?", userID, bookID).
+		Preload("User").
+		Limit(1)
+
+	var userEvaluation models.Evaluation
+	if err := userEvaluationSubquery.First(&userEvaluation).Error; err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+
+	if userEvaluation.ID != uuid.Nil {
+		query = query.Where("Id != ?", userEvaluation.ID)
+	}
+
+	query = query.Order("createdAt DESC")
 
 	evaluations, err := paginate[models.Evaluation](query, pagination, &models.Evaluation{})
 	if err != nil {
@@ -92,6 +109,10 @@ func (e *evaluationRepository) GetPaginatedEvaluationsByBookID(ctx context.Conte
 		}
 
 		return nil, err
+	}
+
+	if userEvaluation.ID != uuid.Nil {
+		evaluations.Data = append([]models.Evaluation{userEvaluation}, evaluations.Data...)
 	}
 
 	return evaluations, nil

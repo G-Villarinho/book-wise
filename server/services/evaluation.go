@@ -80,7 +80,12 @@ func (e *evaluationService) CreateEvaluation(ctx context.Context, bookID uuid.UU
 }
 
 func (e *evaluationService) GetPaginatedEvaluationsByBookID(ctx context.Context, bookID uuid.UUID, pagination *models.Pagination) (*models.PaginatedResponse[*models.EvaluationBasicInfoResponse], error) {
-	paginatedPublishedEvaluations, err := e.evaluationRepository.GetPaginatedEvaluationsByBookID(ctx, bookID, pagination)
+	session, ok := ctx.Value(internal.SessionKey).(models.Session)
+	if !ok {
+		return nil, models.ErrUserNotFoundInContext
+	}
+
+	paginatedPublishedEvaluations, err := e.evaluationRepository.GetPaginatedEvaluationsByBookID(ctx, session.UserID, bookID, pagination)
 	if err != nil {
 		return nil, fmt.Errorf("get paginated evaluations by book id %q: %w", bookID, err)
 	}
