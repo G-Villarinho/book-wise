@@ -51,6 +51,10 @@ export function BookDetails({ book }: BookDetailsProps) {
               />
             );
           })}
+
+        {result && result.data.length === 0 && (
+          <span>Nenhum avaliação encontrada!</span>
+        )}
       </div>
     </div>
   );
