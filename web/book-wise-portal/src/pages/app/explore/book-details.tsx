@@ -1,5 +1,3 @@
-import { Stars } from "@/components/stars";
-import { Bookmark, BookOpen } from "lucide-react";
 import { BookDetailsCard } from "./book-details-card";
 
 interface BookDetailsProps {
