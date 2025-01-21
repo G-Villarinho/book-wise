@@ -1,4 +1,4 @@
-import { Stars } from "@/pages/app/explore/stars";
+import { Stars } from "@/components/stars";
 
 interface BookCardProps {
   title: string;
@@ -14,19 +14,27 @@ export function BookCard({
   rateAverage,
 }: BookCardProps) {
   return (
-    <div className="flex flex-row md:flex-row items-center gap-4 p-4 bg-[#181C2A] shadow rounded-lg hover:shadow-lg hover:bg-[#202638] duration-200 cursor-pointer">
-      <img
-        src={coverImageURL}
-        alt={title}
-        className="w-24 h-32 md:w-28 md:h-36 rounded-md"
-      />
-      <div className="flex flex-col justify-between flex-1 min-w-0 h-full">
-        <div>
-          <h3 className="text-lg font-bold text-gray-100 truncate">{title}</h3>
-          <p className="text-sm text-gray-400 truncate">{authors.join(", ")}</p>
-        </div>
-        <div className="mt-auto">
-          <Stars rateAverage={rateAverage} />
+    <div className="bg-app-gray-700 hover:bg-app-gray-600 duration-200 shadow rounded-lg mt-3">
+      <div className="flex flex-col gap-3 p-4">
+        <div className="flex gap-4">
+          <img
+            src={coverImageURL}
+            alt={title}
+            className="w-24 h-32 md:w-28 md:h-36 rounded-md"
+          />
+          <div className="flex flex-col flex-1 justify-between min-w-0">
+            <div>
+              <h3 className="text-lg font-bold text-gray-100 truncate">
+                {title}
+              </h3>
+              <p className="text-sm text-gray-400 truncate">
+                {authors.join(", ")}
+              </p>
+            </div>
+            <div className="mt-auto">
+              <Stars rateAverage={rateAverage} />
+            </div>
+          </div>
         </div>
       </div>
     </div>

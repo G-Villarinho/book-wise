@@ -60,7 +60,7 @@ export function SearchFilter() {
           variant="outline"
           onClick={clearFilter}
           type="button"
-          className="h-12 bg-[#181C2A]"
+          className="h-12 bg-app-gray-700 hover:bg-app-gray-600"
         >
           <X className="mr-3" />
           Limpar filtro

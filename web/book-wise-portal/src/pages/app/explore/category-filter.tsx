@@ -42,8 +42,8 @@ export function CategoryFilter() {
           className={`font-semibold ${
             selectedCategory === category.id ||
             (category.id === "tudo" && !selectedCategory)
-              ? "bg-[#50B2C0] text-white"
-              : "bg-transparent border-2 border-[#50B2C0] text-[#50B2C0]"
+              ? "bg-app-green-100 hover:bg-app-green-200 text-white"
+              : "bg-transparent border-2 border-app-green-100 text-app-green-100 hover:bg-app-green-200"
           } h-10 px-6 text-sm rounded-full`}
           onClick={() => handleCategoryChange(category.id)}
         >

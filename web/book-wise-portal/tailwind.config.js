@@ -10,6 +10,19 @@ export default {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
+			"app-green-100": "#50B2C0", 
+			"app-green-200": "#255D6A", 
+			"app-green-300": "#0A313C", 
+
+			"app-gray-100": "#F8F9FC", 
+			"app-gray-200": "#E6E8F2", 
+			"app-gray-300": "#D1D6E4", 
+			"app-gray-400": "#8D95AF", 
+			"app-gray-500": "#303F73", 
+			"app-gray-600": "#252D4A", 
+			"app-gray-700": "#181C2A", 
+			"app-gray-800": "#0E1116", 
+
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
