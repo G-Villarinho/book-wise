@@ -233,6 +233,11 @@ func (b *bookService) EvaluateBook(ctx context.Context, bookID uuid.UUID, payloa
 }
 
 func (b *bookService) GetPaginatedPublishedBooks(ctx context.Context, pagination *models.PublishedBookPagination) (*models.PaginatedResponse[*models.PublishedBookResponse], error) {
+	session, ok := ctx.Value(internal.SessionKey).(models.Session)
+	if !ok {
+		return nil, models.ErrUserNotFoundInContext
+	}
+
 	paginatedPublishedBooks, err := b.bookRepository.GetPaginatedPublishedBooks(ctx, pagination)
 	if err != nil {
 		return nil, fmt.Errorf("get paginated books: %w", err)
@@ -240,7 +245,9 @@ func (b *bookService) GetPaginatedPublishedBooks(ctx context.Context, pagination
 
 	paginatedPublishedBooksResponse := models.MapPaginatedResult(paginatedPublishedBooks, func(publishedBook models.Book) *models.PublishedBookResponse {
 		rateAverage := calculateAverageRating(publishedBook.Evaluations)
-		return publishedBook.ToPublishedBookResponse(rateAverage)
+
+		hasRead := userHasReadBook(session.UserID, publishedBook.Evaluations)
+		return publishedBook.ToPublishedBookResponse(rateAverage, hasRead)
 	})
 
 	return paginatedPublishedBooksResponse, nil
@@ -276,4 +283,13 @@ func calculateAverageRating(evaluations []models.Evaluation) float32 {
 		return 0
 	}
 	return sum / float32(count)
+}
+
+func userHasReadBook(userID uuid.UUID, evaluations []models.Evaluation) bool {
+	for _, evaluation := range evaluations {
+		if evaluation.UserID == userID {
+			return true
+		}
+	}
+	return false
 }

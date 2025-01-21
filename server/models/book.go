@@ -87,6 +87,7 @@ type PublishedBookResponse struct {
 	TotalEvaluations uint     `json:"totalEvaluations"`
 	RateAverage      float32  `json:"rateAverage"`
 	Title            string   `json:"title"`
+	HasRead          bool     `json:"hasRead"`
 	CoverImageURL    string   `json:"coverImageURL"`
 	Authors          []string `json:"authors"`
 	Categories       []string `json:"categories"`
@@ -132,7 +133,7 @@ func (b *Book) ToBookResponse() *BookResponse {
 		Categories:       categories,
 	}
 }
-func (b *Book) ToPublishedBookResponse(rateAverage float32) *PublishedBookResponse {
+func (b *Book) ToPublishedBookResponse(rateAverage float32, hasRead bool) *PublishedBookResponse {
 	var authors []string
 	for _, author := range b.Authors {
 		authors = append(authors, author.FullName)
@@ -149,6 +150,7 @@ func (b *Book) ToPublishedBookResponse(rateAverage float32) *PublishedBookRespon
 		TotalEvaluations: b.TotalEvaluations,
 		RateAverage:      rateAverage,
 		Title:            b.Title,
+		HasRead:          hasRead,
 		CoverImageURL:    b.CoverImageURL,
 		Authors:          authors,
 		Categories:       categories,
