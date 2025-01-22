@@ -8,7 +8,9 @@ import (
 )
 
 const (
-	QueueSendEmail = "send_email_queue"
+	QueueSendEmail    = "send_email_queue"
+	UploadAuthorImage = "upload_author_image_queue"
+	UploadUserImage   = "upload_user_image"
 )
 
 //go:generate mockery --name=QueueService --output=../mocks --outpkg=mocks

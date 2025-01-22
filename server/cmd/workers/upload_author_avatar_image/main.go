@@ -72,7 +72,7 @@ func main() {
 	}
 
 	for {
-		messages, err := queueService.Consume(string(services.UploadImageQueue))
+		messages, err := queueService.Consume(string(services.UploadAuthorImage))
 		if err != nil {
 			log.Fatal("error to consume message from queue: ", err)
 		}

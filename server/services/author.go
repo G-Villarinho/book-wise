@@ -73,7 +73,7 @@ func (a *authorService) CreateAuthor(ctx context.Context, payload models.CreateA
 		return fmt.Errorf("marshal upload image task: %w", err)
 	}
 
-	if err := a.queueService.Publish(string(UploadImageQueue), message); err != nil {
+	if err := a.queueService.Publish(string(UploadAuthorImage), message); err != nil {
 		return err
 	}
 

@@ -11,7 +11,9 @@ import (
 	"github.com/G-Villarinho/book-wise-api/internal"
 	"github.com/G-Villarinho/book-wise-api/models"
 	"github.com/G-Villarinho/book-wise-api/repositories"
+	"github.com/G-Villarinho/book-wise-api/utils"
 	"github.com/google/uuid"
+	jsoniter "github.com/json-iterator/go"
 )
 
 type UserService interface {
@@ -23,12 +25,14 @@ type UserService interface {
 	DeleteAdminByID(ctx context.Context, adminID uuid.UUID) error
 	GetAdminByID(ctx context.Context, adminID uuid.UUID) (*models.AdminBasicInfoResponse, error)
 	UpdateAdmin(ctx context.Context, payload models.UpdateAdminPayload) error
+	UpdateUser(ctx context.Context, payload models.UpdateUserPayload) error
 }
 
 type userService struct {
 	di             *internal.Di
 	authService    AuthService
 	cacheService   cache.CacheService
+	queueService   QueueService
 	sessionService SessionService
 	userRepository repositories.UserRepository
 }
@@ -40,6 +44,11 @@ func NewUserService(di *internal.Di) (UserService, error) {
 	}
 
 	cacheService, err := internal.Invoke[cache.CacheService](di)
+	if err != nil {
+		return nil, err
+	}
+
+	queueService, err := internal.Invoke[QueueService](di)
 	if err != nil {
 		return nil, err
 	}
@@ -58,6 +67,7 @@ func NewUserService(di *internal.Di) (UserService, error) {
 		di:             di,
 		authService:    authService,
 		cacheService:   cacheService,
+		queueService:   queueService,
 		sessionService: sessionService,
 		userRepository: userRepository,
 	}, nil
@@ -269,6 +279,53 @@ func (u *userService) UpdateAdmin(ctx context.Context, payload models.UpdateAdmi
 	user.ApplyUpdate(payload)
 	if err := u.userRepository.UpdateUser(ctx, *user); err != nil {
 		return fmt.Errorf("update user %q: %w", payload.AdminID, err)
+	}
+
+	return nil
+}
+
+func (u *userService) UpdateUser(ctx context.Context, payload models.UpdateUserPayload) error {
+	session, ok := ctx.Value(internal.SessionKey).(models.Session)
+	if !ok {
+		return models.ErrUserNotFoundInContext
+	}
+
+	user, err := u.userRepository.GetUserByID(ctx, session.SessionID, []models.Role{models.Member, models.Admin})
+	if err != nil {
+		return fmt.Errorf("get user by id %q: %w", session.UserID, err)
+	}
+
+	if user == nil {
+		return models.ErrUserNotFound
+	}
+
+	if payload.FullName != nil && payload.FullName != &user.FullName {
+		user.FullName = *payload.FullName
+	}
+
+	if payload.Image != nil {
+		image, err := utils.ConvertImageToBytes(payload.Image)
+		if err != nil {
+			return err
+		}
+
+		task := models.ImageUploadTask{
+			RecordID: user.ID,
+			Image:    image,
+		}
+
+		message, err := jsoniter.Marshal(task)
+		if err != nil {
+			return fmt.Errorf("marshal upload image task: %w", err)
+		}
+
+		if err := u.queueService.Publish(string(UploadAuthorImage), message); err != nil {
+			return err
+		}
+	}
+
+	if err := u.userRepository.UpdateUser(ctx, *user); err != nil {
+		return fmt.Errorf("update user %q: %w", session.UserID, err)
 	}
 
 	return nil

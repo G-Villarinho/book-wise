@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"errors"
+	"mime/multipart"
 	"strings"
 	"time"
 
@@ -60,6 +61,11 @@ type UserPagination struct {
 type CreateUserPayload struct {
 	FullName string `json:"fullName" validate:"required,max=255"`
 	Email    string `json:"email" validate:"required,email,max=255"`
+}
+
+type UpdateUserPayload struct {
+	FullName *string               `json:"label" validate:"min=1,max=255"`
+	Image    *multipart.FileHeader `json:"image"`
 }
 
 type UpdateAdminStatusPayload struct {
