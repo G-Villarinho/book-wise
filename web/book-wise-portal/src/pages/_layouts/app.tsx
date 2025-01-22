@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/navbar";
 import { Sidebar } from "@/components/sidebar";
+import { UserProvider } from "@/components/user-provider";
 import { api } from "@/lib/axios";
 import { isAxiosError } from "axios";
 import { useLayoutEffect } from "react";
@@ -37,14 +38,16 @@ export function AppLayout() {
   }, [navigate]);
 
   return (
-    <div className="h-full relative">
-      <div className="hidden h-full md:w-72 md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-gray-950">
-        <Sidebar />
+    <UserProvider>
+      <div className="h-full relative">
+        <div className="hidden h-full md:w-72 md:flex md:flex-col md:fixed md:inset-y-0 z-[80] bg-gray-950">
+          <Sidebar />
+        </div>
+        <main className="md:pl-72">
+          <Navbar />
+          <Outlet />
+        </main>
       </div>
-      <main className="md:pl-72">
-        <Navbar />
-        <Outlet />
-      </main>
-    </div>
+    </UserProvider>
   );
 }

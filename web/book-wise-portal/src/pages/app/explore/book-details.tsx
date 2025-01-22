@@ -4,6 +4,8 @@ import { BookEvaluationCard } from "./book-evaluation-card";
 import { useQuery } from "@tanstack/react-query";
 import { getBookEvaluations } from "@/api/get-book-evaluations";
 import { Button } from "@/components/ui/button";
+import { CreateEvaluationForm } from "./create-evaluation-form";
+import { Star } from "lucide-react";
 
 interface BookDetailsProps {
   book: {
@@ -21,6 +23,7 @@ interface BookDetailsProps {
 
 export function BookDetails({ book }: BookDetailsProps) {
   const [page] = useState(1);
+  const [showEvaluationForm, setShowEvaluationForm] = useState(false);
 
   const { data: result } = useQuery({
     queryKey: ["evaluations", page],
@@ -42,9 +45,19 @@ export function BookDetails({ book }: BookDetailsProps) {
       <div className="mt-8">
         <div className="flex justify-between items-center mb-2">
           <h2 className="text-app-gray-200 text-sm font-thin">Avaliações</h2>
-          {!book.hasRead && <Button variant="ghost">Avaliar</Button>}
-          {}
+          {!book.hasRead && !showEvaluationForm && (
+            <Button variant="ghost" onClick={() => setShowEvaluationForm(true)}>
+              Avaliar
+            </Button>
+          )}
         </div>
+
+        {showEvaluationForm && (
+          <CreateEvaluationForm
+            bookId={book.id}
+            onClose={() => setShowEvaluationForm(false)}
+          />
+        )}
         {result &&
           result.data.map((evaluation) => {
             return (
@@ -60,7 +73,13 @@ export function BookDetails({ book }: BookDetailsProps) {
           })}
 
         {result && result.data.length === 0 && (
-          <span>Nenhum avaliação encontrada!</span>
+          <div className="flex flex-col items-center justify-center text-center mt-12 text-app-gray-300">
+            <Star size={48} className="mb-4 text-app-purple-200" />
+            <p className="text-lg font-semibold">Sem avaliações ainda!</p>
+            <p className="text-sm text-app-gray-400">
+              Seja o primeiro a compartilhar sua opinião sobre este livro.
+            </p>
+          </div>
         )}
       </div>
     </div>

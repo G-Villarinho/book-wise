@@ -7,7 +7,7 @@ export interface GetBookEvaluationsQuery {
   limit?: number | null;
 }
 
-export interface GetBookEvaluationsResponse {
+export interface BookEvaluationsResponse {
   id: string;
   userFullName: string;
   userAvatarUrl: string;
@@ -21,7 +21,7 @@ export async function getBookEvaluations({
   page,
   limit,
 }: GetBookEvaluationsQuery) {
-  const response = await api.get<PaginateResponse<GetBookEvaluationsResponse>>(
+  const response = await api.get<PaginateResponse<BookEvaluationsResponse>>(
     `/books/${bookId}/evaluations`,
     {
       params: {

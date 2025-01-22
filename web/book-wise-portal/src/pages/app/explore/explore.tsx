@@ -18,10 +18,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { BookDetails } from "./book-details";
-// import { useState } from "react";
 
 export function Explore() {
-  // const [isBookDetailsOpen, setIsBookDetailsOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const q = searchParams.get("q");
@@ -63,7 +61,7 @@ export function Explore() {
             <SheetTrigger>
               <BookCard {...book} />
             </SheetTrigger>
-            <SheetContent className="w-[400px] sm:w-[540px] sm:max-w-[540px]">
+            <SheetContent className="w-[400px] sm:w-[540px] sm:max-w-[540px] bg-app-gray-800">
               <SheetHeader>
                 <SheetTitle />
                 <SheetDescription />
@@ -73,7 +71,7 @@ export function Explore() {
           </Sheet>
         ))}
       </div>
-      <div className="p-4">
+      <div>
         {result && (
           <Pagination
             page={page}
