@@ -45,9 +45,7 @@ export function SignIn() {
         },
       });
     } catch {
-      toast.error(
-        "Ocorreu um erro ao tentar autenticar. Por favor, tente novamente."
-      );
+      toast.error("Credenciais inválidas.");
     }
   }
 

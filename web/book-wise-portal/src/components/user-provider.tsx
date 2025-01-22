@@ -17,7 +17,7 @@ export function UserProvider({ children }: UserProviderProps) {
   const { data: result, isFetching } = useQuery({
     queryKey: ["user"],
     queryFn: getUser,
-    staleTime: 1000 * 60 * 15,
+    staleTime: 1000 * 60 * 5,
   });
 
   return (
