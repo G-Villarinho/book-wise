@@ -19,7 +19,7 @@ export function BookEvaluationCard({
   createdAt,
 }: BookEvaluationCardProps) {
   return (
-    <div className="flex flex-col p-4 bg-app-gray-700 rounded-lg">
+    <div className="flex flex-col p-4 bg-app-gray-700 rounded-lg mt-2">
       <div className="flex justify-between mb-6">
         <div className="flex flex-row gap-3">
           <Avatar>
